@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="TaskManagement.Api/TaskManagement.Api.csproj" />
+  <Project Path="TaskManagement.Application/TaskManagement.Application.csproj" />
+  <Project Path="TaskManagement.Core/TaskManagement.Core.csproj" />
+  <Project Path="TaskManagement.Database/TaskManagement.Database.sqlproj" Type="42ea0dbd-9cf1-443e-919e-be9c484e4577" />
+  <Project Path="TaskManagement.Infrastructure/TaskManagement.Infrastructure.csproj" />
+</Solution>
