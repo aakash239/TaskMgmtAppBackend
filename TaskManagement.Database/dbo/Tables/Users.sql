@@ -1,4 +1,5 @@
 CREATE TABLE [dbo].[Users](
+    [Name] NVARCHAR(256) NOT NULL,
     [UserId] INT IDENTITY(1,1) NOT NULL,
     [Email] NVARCHAR(256) NOT NULL,
     [NormalizedEmail] NVARCHAR(256) NOT NULL,
