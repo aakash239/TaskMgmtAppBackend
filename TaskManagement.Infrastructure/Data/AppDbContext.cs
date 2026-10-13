@@ -14,6 +14,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         {
             entity.ToTable("Users", "dbo");
             entity.HasKey(u => u.UserId);
+           
             entity.Property(u => u.UserId).ValueGeneratedOnAdd();
             entity.Property(u => u.UserId).HasMaxLength(256).IsRequired();
             entity.Property(u => u.NormalizedEmail).HasMaxLength(256).IsRequired();
