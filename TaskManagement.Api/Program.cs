@@ -1,17 +1,19 @@
+using Microsoft.EntityFrameworkCore;
 using TaskManagement.Application;
-using TaskManagement.Infrastructure;
+using TaskManagement.Infrastructure.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// Connection String
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")??throw new InvalidOperationException("DB Connection string not configured properly");
 
+builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(connectionString));
+
+// Add services to the container.
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
-builder.Services.AddScoped<IWeatherForecast, WeatherForecastRepository>();
-
-builder.Services.AddScoped<WeatherForecastService>();
 
 var app = builder.Build();
 
