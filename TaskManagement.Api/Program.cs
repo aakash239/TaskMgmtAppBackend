@@ -1,11 +1,10 @@
 using Microsoft.EntityFrameworkCore;
-using TaskManagement.Application;
 using TaskManagement.Infrastructure.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Connection String
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")??throw new InvalidOperationException("DB Connection string not configured properly");
+var connectionString = builder.Configuration.GetConnectionString("defaultConnection")??throw new InvalidOperationException("DB Connection string not configured properly");
 
 builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(connectionString));
 

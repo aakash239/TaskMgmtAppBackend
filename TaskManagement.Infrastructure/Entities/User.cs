@@ -1,4 +1,4 @@
-namespace TaskManagement.Core.Entities;
+namespace TaskManagement.Infrastructure.Entities;
 
 public class User
 {
