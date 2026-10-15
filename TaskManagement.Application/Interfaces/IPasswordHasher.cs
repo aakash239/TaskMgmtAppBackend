@@ -1,6 +1,8 @@
 namespace TaskManagement.Application.Interfaces;
+
+// Contract for hashing passwords. Implemented in Infrastructure.
 public interface IPasswordHasher
 {
-    string HashPassword(string password);
-    bool VerifyPassword(string password, string passwordHash);
+    string Hash(string password);                          // plain text -> hash
+    bool Verify(string password, string passwordHash);     // used later by login
 }
