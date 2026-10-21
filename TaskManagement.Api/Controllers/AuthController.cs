@@ -2,11 +2,13 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TaskManagement.Application.DTOs;
 using TaskManagement.Application.Interfaces;
+using System.Security.Claims;
+using TaskManagement.Application.Models;
 
 namespace TaskManagement.Api.Controllers;
 
 [ApiController]
-[Route("api/auth")]
+[Route("api/[controller]")]     // -> /api/auth
 public class AuthController(IAuthService authService) : ControllerBase
 {
     private readonly IAuthService _authService = authService;
@@ -32,5 +34,30 @@ public class AuthController(IAuthService authService) : ControllerBase
     public IActionResult Test()
     {
         return Ok("You are authenticated!!");
+    }
+
+    // POST /api/auth/signup
+    [HttpPost("signup")]
+    [AllowAnonymous]                                            // no token needed to sign up
+    [ProducesResponseType(typeof(AuthResponseDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> SignUp([FromBody] UserSignUpDto request, CancellationToken cancellationToken)
+    {
+        var result = await _authService.SignUpAsync(request, cancellationToken); 
+        return StatusCode(StatusCodes.Status201Created, result);                 // 201 + body
+    }
+
+    // GET /api/auth/me: temporary endpoint 
+    [HttpGet("me")]
+    [Authorize]                                                 // requires a valid Bearer token
+    public IActionResult Me()
+    {
+        return Ok(new
+        {
+            UserId = User.FindFirstValue("sub"),   // read claims back out of the validated token
+            Email = User.FindFirstValue("email"),
+            Name = User.FindFirstValue("name")
+        });
     }
 }
