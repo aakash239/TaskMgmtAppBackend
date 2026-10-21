@@ -5,12 +5,14 @@ using TaskManagement.Core.Exceptions;
 
 namespace TaskManagement.Application.Services;
 
-public class AuthService (IUserRepository userRepository, IPasswordService passwordService, IJwtTokenService jwtTokenService, IPasswordHasher passwordHasher): IAuthService
+public class AuthService (IUserRepository userRepository, IPasswordService passwordService, IJwtTokenService jwtTokenService, IPasswordHasher passwordHasher, IJwtTokenGenerator jwtTokenGenerator): IAuthService
 {
     private readonly IUserRepository _userRepository = userRepository;
     private readonly IPasswordService _passwordService = passwordService;
-    private readonly IPasswordHasher _passwordHasher = passwordHasher;          // hashing abstraction
+    private readonly IPasswordHasher _passwordHasher = passwordHasher;          // hashing abstraction - amrita
     private readonly IJwtTokenService _jwtTokenService = jwtTokenService;
+
+    private readonly IJwtTokenGenerator _jwtTokenGenerator = jwtTokenGenerator; // amrita
 
     public async Task<LoginResponseDto?> LoginAsync(LoginRequestDto request, CancellationToken cancellationToken = default)
     {
