@@ -56,6 +56,17 @@ builder.Services.AddAuthorization();                             // enables [Aut
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+// ---------- CORS ----------
+const string AngularCorsPolicy = "AngularDev";            // name of the policy
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(AngularCorsPolicy, policy =>
+        policy.WithOrigins("http://localhost:4200")        // only the Angular dev server may call the API
+              .AllowAnyHeader()                            // allows Content-Type and Authorization headers
+              .AllowAnyMethod());                          
+});
+
+
 
 var app = builder.Build();
 
@@ -68,7 +79,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
+app.UseCors(AngularCorsPolicy); 
 app.UseAuthentication();    // reads and validates the Bearer token; must come BEFORE UseAuthorization
 app.UseAuthorization();     // enforces [Authorize]
 
