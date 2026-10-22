@@ -16,5 +16,5 @@ public class JwtSettings
     public string Key { get; set; } = string.Empty;
 
    
-    public int AccessTokenExpiryMinutes { get; set; } = 5;
+    public int AccessTokenExpiryMinutes { get; set; } = 15;
 }

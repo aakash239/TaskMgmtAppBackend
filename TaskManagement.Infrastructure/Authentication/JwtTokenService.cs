@@ -5,14 +5,15 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using TaskManagement.Application.DTOs;
 using TaskManagement.Application.Interfaces;
+using TaskManagement.Core.Configuration;
 
 namespace TaskManagement.Infrastructure.Authentication;
 
 public class JwtTokenService : IJwtTokenService
 {
-    private readonly JwtOptions _options;
+    private readonly JwtSettings _options;
 
-    public JwtTokenService(IOptions<JwtOptions> options)
+    public JwtTokenService(IOptions<JwtSettings> options)
     {
         _options = options.Value;
 
@@ -20,19 +21,20 @@ public class JwtTokenService : IJwtTokenService
             string.IsNullOrWhiteSpace(_options.Audience) ||
             string.IsNullOrWhiteSpace(_options.Key) || 
             Encoding.UTF8.GetByteCount(_options.Key) < 32 || 
-            _options.ExpirationMinutes <= 0)
+            _options.AccessTokenExpiryMinutes <= 0)
         {
             throw new InvalidOperationException("JWT configuration is missing or invalid.");
         }   
     }
 
-    public JwtTokenDto GenerateToken(int userId, string email)
+    public JwtTokenDto GenerateAccessToken(JwtCreationDto user)
     {
         // create claims
         var claims = new List<Claim>
         {
-            new(JwtRegisteredClaimNames.Sub, userId.ToString()),  
-            new(JwtRegisteredClaimNames.Email, email),
+            new(JwtRegisteredClaimNames.Sub, user.UserId.ToString()),  
+            new(JwtRegisteredClaimNames.Name, user.Name.ToString()),
+            new(JwtRegisteredClaimNames.Email, user.Email.ToString()),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
 
@@ -44,7 +46,7 @@ public class JwtTokenService : IJwtTokenService
 
         // calculate expiration
         var now = DateTime.UtcNow;
-        var expires = now.AddMinutes(_options.ExpirationMinutes);
+        var expires = now.AddMinutes(_options.AccessTokenExpiryMinutes);
 
         // create JWT
         var token = new JwtSecurityToken(

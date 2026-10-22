@@ -3,7 +3,7 @@ using TaskManagement.Application.Interfaces;
 
 namespace TaskManagement.Infrastructure.Authentication;
 
-public class PasswordSerice : IPasswordService
+public class PasswordService : IPasswordService
 {
     private readonly PasswordHasher<object> _passwordHasher = new();
     private static readonly object UserContext = new();

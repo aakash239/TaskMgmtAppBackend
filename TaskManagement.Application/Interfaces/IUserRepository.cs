@@ -1,5 +1,4 @@
 using TaskManagement.Application.DTOs;
-using TaskManagement.Application.Models;
 
 namespace TaskManagement.Application.Interfaces;
 

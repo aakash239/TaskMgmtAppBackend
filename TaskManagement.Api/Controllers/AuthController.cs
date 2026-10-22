@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using TaskManagement.Application.DTOs;
 using TaskManagement.Application.Interfaces;
 using System.Security.Claims;
-using TaskManagement.Application.Models;
 
 namespace TaskManagement.Api.Controllers;
 
@@ -15,15 +14,15 @@ public class AuthController(IAuthService authService) : ControllerBase
 
     [HttpPost("login")]
     [AllowAnonymous]
-    [ProducesResponseType(typeof(LoginResponseDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(AuthResponseDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
-    public async Task<ActionResult<LoginResponseDto>> Login(
+    public async Task<ActionResult<AuthResponseDto>> Login(
         [FromBody] LoginRequestDto request,
         CancellationToken cancellationToken
     )
     {
         var response = await _authService.LoginAsync(request, cancellationToken);
-        if(response is null)
+        if (response is null)
         {
             return Problem(statusCode: StatusCodes.Status401Unauthorized, title: "Unathorized", detail: "Invalid Email and password");
         }
@@ -31,6 +30,7 @@ public class AuthController(IAuthService authService) : ControllerBase
     }
 
     [HttpGet("test")]
+    [Authorize]
     public IActionResult Test()
     {
         return Ok("You are authenticated!!");
@@ -44,7 +44,7 @@ public class AuthController(IAuthService authService) : ControllerBase
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<IActionResult> SignUp([FromBody] UserSignUpDto request, CancellationToken cancellationToken)
     {
-        var result = await _authService.SignUpAsync(request, cancellationToken); 
+        var result = await _authService.SignUpAsync(request, cancellationToken);
         return StatusCode(StatusCodes.Status201Created, result);                 // 201 + body
     }
 

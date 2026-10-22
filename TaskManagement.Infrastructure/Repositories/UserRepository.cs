@@ -2,9 +2,6 @@ using Microsoft.EntityFrameworkCore;
 using TaskManagement.Application.Interfaces;
 using TaskManagement.Application.DTOs;
 using TaskManagement.Infrastructure.Data;
-using Microsoft.Data.SqlClient;
-using TaskManagement.Application.Models;
-using TaskManagement.Core.Exceptions;
 using TaskManagement.Infrastructure.Entities;
 
 namespace TaskManagement.Infrastructure.Repositories;
@@ -20,6 +17,7 @@ public class UserRepository(AppDbContext context) : IUserRepository
                             .Where(u => u.NormalizedEmail == normalizedEmail)
                             .Select(u => new LoginUserDto(
                                 u.UserId,
+                                u.Name,
                                 u.Email,
                                 u.PasswordHash,
                                 u.IsActive

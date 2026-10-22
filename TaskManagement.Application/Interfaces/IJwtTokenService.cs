@@ -4,7 +4,7 @@ namespace TaskManagement.Application.Interfaces;
 
 public interface IJwtTokenService
 {
-    JwtTokenDto GenerateToken(int userId, string email);
+    JwtTokenDto GenerateAccessToken(JwtCreationDto user);
 }
 
 // Generate JWT Token
