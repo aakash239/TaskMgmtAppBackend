@@ -1,19 +1,28 @@
-using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using TaskManagement.Application.Interfaces;
-using TaskManagement.Application.Models;
-using TaskManagement.Core.Exceptions;
+using TaskManagement.Application.DTOs;
 using TaskManagement.Infrastructure.Data;
 using TaskManagement.Infrastructure.Entities;
 
 namespace TaskManagement.Infrastructure.Repositories;
 
-public class UserRepository : IUserRepository
+public class UserRepository(AppDbContext context) : IUserRepository
 {
-    private readonly AppDbContext _context;
+    private readonly AppDbContext _context = context;
 
-    public UserRepository(AppDbContext context) => _context = context;
-
+    public async Task<LoginUserDto?> GetByNormalizedEmailAsync(string normalizedEmail, CancellationToken cancellationToken = default)
+    {
+        return await _context.Users
+                            .AsNoTracking()
+                            .Where(u => u.NormalizedEmail == normalizedEmail)
+                            .Select(u => new LoginUserDto(
+                                u.UserId,
+                                u.Name,
+                                u.Email,
+                                u.PasswordHash,
+                                u.IsActive
+                            )).FirstOrDefaultAsync(cancellationToken);
+    }
     public Task<bool> EmailExistsAsync(string normalizedEmail, CancellationToken cancellationToken = default)
     {
        

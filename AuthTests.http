@@ -1,0 +1,213 @@
+# TASK MANAGEMENT API — AUTHENTICATION REGRESSION TESTS
+# VS Code extension: REST Client (Huachao Mao)
+#
+# BEFORE RUNNING:
+# 1. Start the backend: dotnet run --project .\TaskManagement.Api\ --launch-profile http
+# 2. Confirm the URL below matches the "Now listening on" address.
+# 3. Change @testEmail to a NEW email before repeating a full test run.
+# 4. Click "Send Request" above each test, IN ORDER (particularly tests 01, 02, 09, 16, 20).
+# 5. # @name signup and # @name login save the responses for subsequent bearer-token tests.
+#
+# IMPORTANT: This REST Client extension stores all the requests in one .http file,
+# but does NOT offer an inbuilt one-click "run every request" feature.
+#
+# Expected HTTP codes appear above each test. A response does not automatically
+# pass/fail by status; YOU must compare the actual status against the comment.
+# Never commit real passwords or access tokens. These credentials are disposable.
+#
+# Designed for: POST /api/auth/signup, POST /api/auth/login, GET /api/auth/me
+# NOTE: /api/auth/test is intentionally NOT tested (it should be removed).
+
+@baseUrl = http://localhost:5005
+@testEmail = testuser101@example.com
+@testPassword = SecurePass@123
+
+### TEST 01 — Signup, new user | EXPECT: 201 Created
+# @name signup
+POST {{baseUrl}}/api/auth/signup
+Content-Type: application/json
+
+{
+  "name": "REST Test User",
+  "email": "{{testEmail}}",
+  "password": "{{testPassword}}"
+}
+
+### TEST 02 — Signup, duplicate email | EXPECT: 409 Conflict
+POST {{baseUrl}}/api/auth/signup
+Content-Type: application/json
+
+{
+  "name": "Duplicate Account",
+  "email": "{{testEmail}}",
+  "password": "AnotherPass@123"
+}
+
+### TEST 03 — Signup, uppercase duplicate email | EXPECT: 409 Conflict
+# This uses the uppercase form of the default @testEmail.
+# If you change @testEmail, update this value to match its uppercase form.
+POST {{baseUrl}}/api/auth/signup
+Content-Type: application/json
+
+{
+  "name": "Duplicate Uppercase Account",
+  "email": "TESTUSER101@EXAMPLE.COM",
+  "password": "AnotherPass@123"
+}
+
+### TEST 04 — Signup, missing name | EXPECT: 400 Bad Request
+POST {{baseUrl}}/api/auth/signup
+Content-Type: application/json
+
+{
+  "email": "missingname@example.com",
+  "password": "SecurePass@123"
+}
+
+### TEST 05 — Signup, invalid email | EXPECT: 400 Bad Request
+POST {{baseUrl}}/api/auth/signup
+Content-Type: application/json
+
+{
+  "name": "Invalid Email",
+  "email": "not-an-email",
+  "password": "SecurePass@123"
+}
+
+### TEST 06 — Signup, missing password | EXPECT: 400 Bad Request
+POST {{baseUrl}}/api/auth/signup
+Content-Type: application/json
+
+{
+  "name": "Missing Password",
+  "email": "missingpassword@example.com"
+}
+
+### TEST 07 — Signup, empty body | EXPECT: 400 Bad Request
+POST {{baseUrl}}/api/auth/signup
+Content-Type: application/json
+Content-Length: 0
+
+### TEST 08 — Signup, whitespace-only name | TARGET: 400 Bad Request
+# If 201 occurs, your name validation still has a gap; don't treat it as a pass.
+POST {{baseUrl}}/api/auth/signup
+Content-Type: application/json
+
+{
+  "name": "   ",
+  "email": "whitespace-name@example.com",
+  "password": "SecurePass@123"
+}
+
+### TEST 09 — Login, valid credentials | EXPECT: 200 OK
+# @name login
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{testEmail}}",
+  "password": "{{testPassword}}"
+}
+
+### TEST 10 — Login, incorrect password | EXPECT: 401 Unauthorized
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{testEmail}}",
+  "password": "WrongPassword123"
+}
+
+### TEST 11 — Login, nonexistent user | EXPECT: 401 Unauthorized
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "absent-user-98765@example.com",
+  "password": "{{testPassword}}"
+}
+
+### TEST 12 — Login, uppercase email | EXPECT: 200 OK
+# If @testEmail changes, update this uppercase email too.
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "TESTUSER101@EXAMPLE.COM",
+  "password": "{{testPassword}}"
+}
+
+### TEST 13 — Login, email with surrounding whitespace | VERIFY API POLICY
+# Depending on model validation, this may be 400 or 200 after trimming.
+# Choose a documented contract; it must not cause 500.
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "  testuser101@example.com  ",
+  "password": "{{testPassword}}"
+}
+
+### TEST 14 — Login, empty password | EXPECT: 400 Bad Request
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{testEmail}}",
+  "password": ""
+}
+
+### TEST 15 — Login, missing email | EXPECT: 400 Bad Request
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "password": "{{testPassword}}"
+}
+
+### TEST 16 — Protected endpoint, valid LOGIN JWT | EXPECT: 200 OK
+# First send TEST 09 to populate the login response variable.
+# Response should contain the correct userId, email, and name.
+GET {{baseUrl}}/api/auth/me
+Authorization: Bearer {{login.response.body.$.accessToken}}
+
+### TEST 17 — Protected endpoint, no JWT | EXPECT: 401 Unauthorized
+GET {{baseUrl}}/api/auth/me
+
+### TEST 18 — Protected endpoint, invalid JWT | EXPECT: 401 Unauthorized
+GET {{baseUrl}}/api/auth/me
+Authorization: Bearer invalid.jwt.token
+
+### TEST 19 — Protected endpoint, tampered JWT | EXPECT: 401 Unauthorized
+# Paste a valid JWT from TEST 09 below and CHANGE ONE CHARACTER
+# in the signature (final dot-separated segment) before sending.
+# The placeholder request as written is invalid and should also return 401.
+GET {{baseUrl}}/api/auth/me
+Authorization: Bearer PASTE_TAMPERED_JWT_HERE
+
+
+### TEST 21 — Expired JWT | EXPECT: 401 Unauthorized AFTER EXPIRY
+# 1. Send TEST 09 to generate a fresh token.
+# 2. Send TEST 16 immediately: should return 200.
+# 3. Do NOT rerun TEST 09.
+# 4. After expiresAtUtc (15 minutes), send this request: should return 401.
+GET {{baseUrl}}/api/auth/me
+Authorization: Bearer {{login.response.body.$.accessToken}}
+
+### TEST 22 — Wrong HTTP method | EXPECT: 405 Method Not Allowed
+GET {{baseUrl}}/api/auth/login
+
+### TEST 23 — Malformed JSON | EXPECT: 400 Bad Request
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "testuser101@example.com",
+  "password":
+}
+
+### TEST 24 — Unsupported media type | EXPECT: 415 Unsupported Media Type
+POST {{baseUrl}}/api/auth/login
+Content-Type: text/plain
+
+hello

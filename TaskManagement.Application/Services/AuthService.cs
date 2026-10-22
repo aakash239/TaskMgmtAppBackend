@@ -1,25 +1,50 @@
+using TaskManagement.Application.DTOs;
 using TaskManagement.Application.Interfaces;
-using TaskManagement.Application.Models;
 using TaskManagement.Core.Exceptions;
 
 namespace TaskManagement.Application.Services;
 
-// Business logic for sign-up. Knows WHAT to do, not HOW the DB/JWT work.
-public class AuthService : IAuthService
+public class AuthService (IUserRepository userRepository, IPasswordService passwordService, IJwtTokenService jwtTokenService): IAuthService
 {
-    private readonly IUserRepository _userRepository;          // data access abstraction
-    private readonly IPasswordHasher _passwordHasher;          // hashing abstraction
-    private readonly IJwtTokenGenerator _jwtTokenGenerator;    // token abstraction
+    private readonly IUserRepository _userRepository = userRepository;
+    private readonly IPasswordService _passwordService = passwordService;
+    private readonly IJwtTokenService _jwtTokenService = jwtTokenService;
 
-    // Dependencies are injected by the DI container.
-    public AuthService(
-        IUserRepository userRepository,
-        IPasswordHasher passwordHasher,
-        IJwtTokenGenerator jwtTokenGenerator)
+    public async Task<AuthResponseDto?> LoginAsync(LoginRequestDto request, CancellationToken cancellationToken = default)
     {
-        _userRepository = userRepository;
-        _passwordHasher = passwordHasher;
-        _jwtTokenGenerator = jwtTokenGenerator;
+        // Validate Credentials
+        if(string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password))
+        {
+            return null;
+        }   
+
+        // Normalize Email
+        string normalizedEmail = request.Email.Trim().ToUpperInvariant();
+
+        //retrieve user
+        var user = await _userRepository.GetByNormalizedEmailAsync(normalizedEmail, cancellationToken);
+
+        // check user existence and status
+        if(user is null || !user.IsActive)
+        {
+            return null;
+        }
+
+        // Verify password
+        bool isPasswordValid = _passwordService.VerifyPassword(user.PasswordHash, request.Password);
+        if(!isPasswordValid) return null;
+
+        // generate JWT
+        var token = _jwtTokenService.GenerateAccessToken(new JwtCreationDto(user.UserId, user.Name, user.Email));
+
+        return new AuthResponseDto
+        (
+            user.UserId,
+            user.Name,
+            user.Email,
+            token.AccessToken,
+            token.ExpiresAtUtc
+        );
     }
 
     public async Task<AuthResponseDto> SignUpAsync(UserSignUpDto request, CancellationToken cancellationToken = default)
@@ -38,28 +63,28 @@ public class AuthService : IAuthService
         }
 
         // Hash the password. We never store or log the plain-text password.
-        var passwordHash = _passwordHasher.Hash(request.Password);
+        var passwordHash = _passwordService.HashPassword(request.Password);
 
         // Save the user. 
         var createdUser = await _userRepository.CreateAsync(new CreateUserDto
-        {
-            Name = name,
-            Email = email,
-            NormalizedEmail = normalizedEmail,
-            PasswordHash = passwordHash
-        }, cancellationToken);
+        (
+            name,
+            email,
+            normalizedEmail,
+            passwordHash
+        ), cancellationToken);
 
         //  JWT so the user is signed in immediately after sign-up.
-        var accessToken = _jwtTokenGenerator.GenerateAccessToken(createdUser);
+        var accessToken = _jwtTokenService.GenerateAccessToken(new JwtCreationDto(createdUser.UserId, createdUser.Name, createdUser.Email));
 
         // Shape the response for the client.
         return new AuthResponseDto
-        {
-            UserId = createdUser.UserId,
-            Name = createdUser.Name,
-            Email = createdUser.Email,
-            AccessToken = accessToken.Token,
-            ExpiresAtUtc = accessToken.ExpiresAtUtc
-        };
+        (
+            createdUser.UserId,
+            createdUser.Name,
+            createdUser.Email,
+            accessToken.AccessToken,
+            accessToken.ExpiresAtUtc
+        );
     }
 }

@@ -1,1 +1,16 @@
+@baseUrl = http://localhost:5005
 
+
+### TEST 1: Successful Signup
+# @name signup
+
+
+POST {{baseUrl}}/api/auth/signup
+Content-Type: application/json
+
+
+{
+    "name": "Test User",
+    "email": "testuser101@example.com",
+    "password": "SecurePass@123"
+}

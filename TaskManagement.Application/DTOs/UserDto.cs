@@ -1,4 +1,4 @@
-namespace TaskManagement.Application.Models;
+namespace TaskManagement.Application.DTOs;
 
 // A safe representation of a user that is returned by the repository.
 // PasswordHash.Deliberately Excluded.

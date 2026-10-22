@@ -1,9 +1,11 @@
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using TaskManagement.Application.Interfaces;
 using TaskManagement.Core.Configuration;
+using TaskManagement.Infrastructure.Authentication;
+using TaskManagement.Infrastructure.Data;
 using TaskManagement.Infrastructure.Repositories;
-using TaskManagement.Infrastructure.Security;
 
 namespace TaskManagement.Infrastructure;
 
@@ -18,8 +20,16 @@ public static class DependencyInjection
         services.Configure<JwtSettings>(configuration.GetSection(JwtSettings.SectionName));
 
         services.AddScoped<IUserRepository, UserRepository>();         // one per request (depends on the scoped DbContext)
-        services.AddSingleton<IPasswordHasher, BcryptPasswordHasher>(); // stateless, one shared instance
-        services.AddSingleton<IJwtTokenGenerator, JwtTokenGenerator>(); // stateless, one shared instance
+        services.AddScoped<IPasswordService, PasswordService>();
+        services.AddSingleton<IJwtTokenService, JwtTokenService>();
+
+        // Connection String Configuration
+        var connectionString = configuration.GetConnectionString("defaultConnection") ?? throw new InvalidOperationException("DB Connection string not configured properly");
+
+        // Services here
+        // Database
+        // Register EF Core's DbContext (scoped per request by default).
+        services.AddDbContext<AppDbContext>(options => options.UseSqlServer(configuration.GetConnectionString("defaultConnection")));
 
         return services;
     }

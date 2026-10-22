@@ -1,18 +1,40 @@
-using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using TaskManagement.Application.DTOs;
 using TaskManagement.Application.Interfaces;
-using TaskManagement.Application.Models;
+using System.Security.Claims;
 
 namespace TaskManagement.Api.Controllers;
 
-[ApiController]                 // enables automatic 400 responses when DTO validation fails
+[ApiController]
 [Route("api/[controller]")]     // -> /api/auth
-public class AuthController : ControllerBase
+public class AuthController(IAuthService authService) : ControllerBase
 {
-    private readonly IAuthService _authService;
+    private readonly IAuthService _authService = authService;
 
-    public AuthController(IAuthService authService) => _authService = authService;
+    [HttpPost("login")]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(AuthResponseDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<AuthResponseDto>> Login(
+        [FromBody] LoginRequestDto request,
+        CancellationToken cancellationToken
+    )
+    {
+        var response = await _authService.LoginAsync(request, cancellationToken);
+        if (response is null)
+        {
+            return Problem(statusCode: StatusCodes.Status401Unauthorized, title: "Unathorized", detail: "Invalid Email and password");
+        }
+        return Ok(response);
+    }
+
+    [HttpGet("test")]
+    [Authorize]
+    public IActionResult Test()
+    {
+        return Ok("You are authenticated!!");
+    }
 
     // POST /api/auth/signup
     [HttpPost("signup")]
@@ -22,7 +44,7 @@ public class AuthController : ControllerBase
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<IActionResult> SignUp([FromBody] UserSignUpDto request, CancellationToken cancellationToken)
     {
-        var result = await _authService.SignUpAsync(request, cancellationToken); 
+        var result = await _authService.SignUpAsync(request, cancellationToken);
         return StatusCode(StatusCodes.Status201Created, result);                 // 201 + body
     }
 

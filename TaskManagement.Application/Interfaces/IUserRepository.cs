@@ -1,10 +1,11 @@
-using TaskManagement.Application.Models;
+using TaskManagement.Application.DTOs;
 
 namespace TaskManagement.Application.Interfaces;
 
-// Contract for user data access. Implemented in Infrastructure.
 public interface IUserRepository
 {
+    Task<LoginUserDto?> GetByNormalizedEmailAsync(string normalizedEmail, CancellationToken cancellationToken = default);
+
     // True if a user with this normalized email already exists.
     Task<bool> EmailExistsAsync(string normalizedEmail, CancellationToken cancellationToken = default);
 
