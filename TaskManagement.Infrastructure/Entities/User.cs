@@ -9,6 +9,9 @@ public class User
     public string PasswordHash {get; set;} = string.Empty;
     public bool IsActive {get; set;} = true;
     public DateTime CreatedAt{get; set;} = DateTime.UtcNow;
+
+    // navigation properties
+    public ICollection<UserSession> Sessions {get; set;} = new List<UserSession>();
 }
 
 

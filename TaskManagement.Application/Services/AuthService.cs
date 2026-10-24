@@ -47,6 +47,10 @@ public class AuthService (IUserRepository userRepository, IPasswordService passw
         );
     }
 
+    public async Task<TokenRefreshResponseDto?> RefreshTokenAsync(TokenRefereshDto request, CancellationToken cancellationToken = default)
+    {
+        
+    }
     public async Task<AuthResponseDto> SignUpAsync(UserSignUpDto request, CancellationToken cancellationToken = default)
     {
         // Cleaning the input
