@@ -12,6 +12,7 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options) : DbCo
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+        
         modelBuilder.Entity<User> (entity =>
         {
             entity.ToTable("Users", "dbo");
@@ -86,7 +87,7 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options) : DbCo
                 .OnDelete(DeleteBehavior.NoAction);
 
             // Self-referencing relationship
-            entity.HasOne(r => r.ReplacedByTokenId)
+            entity.HasOne(r => r.ReplacedByToken)
                 .WithMany()
                 .HasForeignKey(r => r.ReplacedByTokenId)
                 .OnDelete(DeleteBehavior.NoAction);
@@ -99,5 +100,5 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options) : DbCo
             entity.HasIndex(r => r.SessionId)
                 .HasDatabaseName("IX_RefreshTokens_SessionId");
         });
-    }
+    }    
 }
