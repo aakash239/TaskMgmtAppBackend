@@ -15,6 +15,7 @@ public partial class AuthController: ControllerBase
     public async Task<IActionResult> SignUp([FromBody] UserSignUpDto request, CancellationToken cancellationToken)
     {
         var result = await _authService.SignUpAsync(request, cancellationToken);
-        return StatusCode(StatusCodes.Status201Created, result);                 // 201 + body
+        SetRefreshTokenCookie(result.RefreshToken, result.RefreshTokenExpiresAtUtc);
+        return StatusCode(StatusCodes.Status201Created, result.Response);
     }
 }

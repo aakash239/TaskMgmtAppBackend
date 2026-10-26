@@ -5,9 +5,11 @@ namespace TaskManagement.Application.DTOs;
 public class UserSignUpDto
 {
     [Required]
+    [StringLength(256)]
      public string Name {get; set;} = string.Empty;
      [Required]
      [EmailAddress]
+     [StringLength(256)]
      public string Email {get; set;} = string.Empty;
      [Required]
      public string Password{get;set;} = string.Empty;

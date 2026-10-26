@@ -16,7 +16,9 @@
 # Never commit real passwords or access tokens. These credentials are disposable.
 #
 # Designed for: POST /api/auth/signup, POST /api/auth/login, GET /api/auth/me
-# NOTE: /api/auth/test is intentionally NOT tested (it should be removed).
+# The diagnostic /api/auth/test endpoint has been removed.
+# Auth POSTs require X-CSRF: 1. Allow the REST Client's cookie jar to retain
+# Set-Cookie responses, or explicitly supply the cookie for the tests below.
 
 @baseUrl = http://localhost:5005
 @testEmail = testuser101@example.com
@@ -25,6 +27,7 @@
 ### TEST 01 — Signup, new user | EXPECT: 201 Created
 # @name signup
 POST {{baseUrl}}/api/auth/signup
+X-CSRF: 1
 Content-Type: application/json
 
 {
@@ -35,6 +38,7 @@ Content-Type: application/json
 
 ### TEST 02 — Signup, duplicate email | EXPECT: 409 Conflict
 POST {{baseUrl}}/api/auth/signup
+X-CSRF: 1
 Content-Type: application/json
 
 {
@@ -47,6 +51,7 @@ Content-Type: application/json
 # This uses the uppercase form of the default @testEmail.
 # If you change @testEmail, update this value to match its uppercase form.
 POST {{baseUrl}}/api/auth/signup
+X-CSRF: 1
 Content-Type: application/json
 
 {
@@ -57,6 +62,7 @@ Content-Type: application/json
 
 ### TEST 04 — Signup, missing name | EXPECT: 400 Bad Request
 POST {{baseUrl}}/api/auth/signup
+X-CSRF: 1
 Content-Type: application/json
 
 {
@@ -66,6 +72,7 @@ Content-Type: application/json
 
 ### TEST 05 — Signup, invalid email | EXPECT: 400 Bad Request
 POST {{baseUrl}}/api/auth/signup
+X-CSRF: 1
 Content-Type: application/json
 
 {
@@ -76,6 +83,7 @@ Content-Type: application/json
 
 ### TEST 06 — Signup, missing password | EXPECT: 400 Bad Request
 POST {{baseUrl}}/api/auth/signup
+X-CSRF: 1
 Content-Type: application/json
 
 {
@@ -85,12 +93,14 @@ Content-Type: application/json
 
 ### TEST 07 — Signup, empty body | EXPECT: 400 Bad Request
 POST {{baseUrl}}/api/auth/signup
+X-CSRF: 1
 Content-Type: application/json
 Content-Length: 0
 
 ### TEST 08 — Signup, whitespace-only name | TARGET: 400 Bad Request
 # If 201 occurs, your name validation still has a gap; don't treat it as a pass.
 POST {{baseUrl}}/api/auth/signup
+X-CSRF: 1
 Content-Type: application/json
 
 {
@@ -102,6 +112,7 @@ Content-Type: application/json
 ### TEST 09 — Login, valid credentials | EXPECT: 200 OK
 # @name login
 POST {{baseUrl}}/api/auth/login
+X-CSRF: 1
 Content-Type: application/json
 
 {
@@ -111,6 +122,7 @@ Content-Type: application/json
 
 ### TEST 10 — Login, incorrect password | EXPECT: 401 Unauthorized
 POST {{baseUrl}}/api/auth/login
+X-CSRF: 1
 Content-Type: application/json
 
 {
@@ -120,6 +132,7 @@ Content-Type: application/json
 
 ### TEST 11 — Login, nonexistent user | EXPECT: 401 Unauthorized
 POST {{baseUrl}}/api/auth/login
+X-CSRF: 1
 Content-Type: application/json
 
 {
@@ -130,6 +143,7 @@ Content-Type: application/json
 ### TEST 12 — Login, uppercase email | EXPECT: 200 OK
 # If @testEmail changes, update this uppercase email too.
 POST {{baseUrl}}/api/auth/login
+X-CSRF: 1
 Content-Type: application/json
 
 {
@@ -141,6 +155,7 @@ Content-Type: application/json
 # Depending on model validation, this may be 400 or 200 after trimming.
 # Choose a documented contract; it must not cause 500.
 POST {{baseUrl}}/api/auth/login
+X-CSRF: 1
 Content-Type: application/json
 
 {
@@ -150,6 +165,7 @@ Content-Type: application/json
 
 ### TEST 14 — Login, empty password | EXPECT: 400 Bad Request
 POST {{baseUrl}}/api/auth/login
+X-CSRF: 1
 Content-Type: application/json
 
 {
@@ -159,6 +175,7 @@ Content-Type: application/json
 
 ### TEST 15 — Login, missing email | EXPECT: 400 Bad Request
 POST {{baseUrl}}/api/auth/login
+X-CSRF: 1
 Content-Type: application/json
 
 {
@@ -199,6 +216,7 @@ GET {{baseUrl}}/api/auth/login
 
 ### TEST 23 — Malformed JSON | EXPECT: 400 Bad Request
 POST {{baseUrl}}/api/auth/login
+X-CSRF: 1
 Content-Type: application/json
 
 {
@@ -208,6 +226,63 @@ Content-Type: application/json
 
 ### TEST 24 — Unsupported media type | EXPECT: 415 Unsupported Media Type
 POST {{baseUrl}}/api/auth/login
+X-CSRF: 1
 Content-Type: text/plain
 
 hello
+
+### TEST 25 — Refresh current cookie | EXPECT: 200; new cookie, original expiry
+# @name refresh
+# Send a successful login first; the REST Client cookie jar supplies refreshToken.
+POST {{baseUrl}}/api/auth/refresh
+X-CSRF: 1
+
+### TEST 26 — Reuse rotated token | EXPECT: 401; session stays active, no Set-Cookie
+# Replace this disposable placeholder with the cookie saved BEFORE TEST 25.
+POST {{baseUrl}}/api/auth/refresh
+X-CSRF: 1
+Cookie: refreshToken=PASTE_PREVIOUS_REFRESH_COOKIE_HERE
+
+### TEST 27 — Logout | EXPECT: 204; clear cookie and revoke this session
+POST {{baseUrl}}/api/auth/logout
+X-CSRF: 1
+
+### TEST 28 — Refresh after logout | EXPECT: 401
+POST {{baseUrl}}/api/auth/refresh
+X-CSRF: 1
+
+### TEST 29 — Issued JWT after logout | EXPECT: 200 until original JWT expiry
+GET {{baseUrl}}/api/auth/me
+Authorization: Bearer {{refresh.response.body.$.accessToken}}
+
+### TEST 30 — Missing CSRF header | EXPECT: 403; no authentication side effect
+POST {{baseUrl}}/api/auth/refresh
+
+### TEST 31 — Untrusted browser origin | EXPECT: 403
+POST {{baseUrl}}/api/auth/refresh
+X-CSRF: 1
+Origin: http://untrusted.example
+
+### TEST 32 — Allowed credentialed preflight | EXPECT: 204 + exact origin/credentials
+OPTIONS {{baseUrl}}/api/auth/refresh
+Origin: http://localhost:4200
+Access-Control-Request-Method: POST
+Access-Control-Request-Headers: X-CSRF, Content-Type
+
+### TEST 33 — Logout all sessions | EXPECT: 204; all this user's refresh cookies fail
+# Requires an unexpired access JWT; send login again first if needed.
+POST {{baseUrl}}/api/auth/logout-all
+X-CSRF: 1
+Authorization: Bearer {{login.response.body.$.accessToken}}
+
+### TEST 34 — Controller helpers are not routes | EXPECT: 404 Not Found
+GET {{baseUrl}}/api/auth
+
+### TEST 35 — Development OpenAPI | EXPECT: 200 OK in Development
+GET {{baseUrl}}/openapi/v1.json
+
+### TEST 36 — Invalid login without CSRF header | EXPECT: 403 before validation
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{}

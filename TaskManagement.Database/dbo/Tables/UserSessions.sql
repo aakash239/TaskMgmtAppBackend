@@ -11,9 +11,9 @@ CREATE TABLE [dbo].[UserSessions](
 
     [ExpiresAt] DATETIME2 NOT NULL,
 
-    [LastActivityAt] DATETIME2 NOT NULL,
+    [LastActivityAt] DATETIME2 NULL,
 
-    [RevokedAt] DATETIME2 NOT NULL,
+    [RevokedAt] DATETIME2 NULL,
 
     CONSTRAINT [FK_UserSessions_Users]
         FOREIGN KEY ([UserId])

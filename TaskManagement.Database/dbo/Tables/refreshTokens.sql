@@ -17,6 +17,10 @@ CREATE TABLE [dbo].[RefreshTokens](
 
     [ReplacedByTokenId] BIGINT NULL,
 
+    CONSTRAINT [FK_RefreshTokens_UserSessions]
+        FOREIGN KEY ([SessionId])
+        REFERENCES [dbo].[UserSessions]([SessionId]),
+
     CONSTRAINT [FK_RefreshTokens_Replacement]
         FOREIGN KEY ([ReplacedByTokenId])
         REFERENCES [dbo].[RefreshTokens]([RefreshTokenId]),
@@ -32,5 +36,10 @@ GO
 
 CREATE INDEX [IX_RefreshTokens_SessionId]
     ON [dbo].[RefreshTokens]([SessionId]);
+
+GO
+
+CREATE INDEX [IX_RefreshTokens_ReplacedByTokenId]
+    ON [dbo].[RefreshTokens]([ReplacedByTokenId]);
 
 GO

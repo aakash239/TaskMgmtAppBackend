@@ -16,8 +16,9 @@ public partial class AuthController: ControllerBase
         var response = await _authService.LoginAsync(request, cancellationToken);
         if (response is null)
         {
-            return Problem(statusCode: StatusCodes.Status401Unauthorized, title: "Unathorized", detail: "Invalid Email and password");
+            return Problem(statusCode: StatusCodes.Status401Unauthorized, title: "Unauthorized", detail: "Invalid email or password.");
         }
-        return Ok(response);
+        SetRefreshTokenCookie(response.RefreshToken, response.RefreshTokenExpiresAtUtc);
+        return Ok(response.Response);
     }
 }

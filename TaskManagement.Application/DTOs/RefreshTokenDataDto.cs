@@ -9,5 +9,7 @@ public sealed record RefreshTokenData(
     DateTime? SessionRevokedAt,
     DateTime? TokenRevokedAt,
     long? ReplacedByTokenId,
-    bool IsActiveUser
+    bool IsActiveUser,
+    string Name,
+    string Email
 );

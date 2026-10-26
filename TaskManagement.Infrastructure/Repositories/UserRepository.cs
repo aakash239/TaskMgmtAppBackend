@@ -1,14 +1,21 @@
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using TaskManagement.Application.Interfaces;
 using TaskManagement.Application.DTOs;
 using TaskManagement.Infrastructure.Data;
 using TaskManagement.Infrastructure.Entities;
+using TaskManagement.Core.Exceptions;
 
 namespace TaskManagement.Infrastructure.Repositories;
 
-public class UserRepository(AppDbContext context) : IUserRepository
+public class UserRepository : IUserRepository
 {
-    private readonly AppDbContext _context = context;
+    private readonly AppDbContext _context;
+
+    public UserRepository(AppDbContext context)
+    {
+        _context = context;
+    }
 
     public async Task<LoginUserDto?> GetByNormalizedEmailAsync(string normalizedEmail, CancellationToken cancellationToken = default)
     {
@@ -44,10 +51,19 @@ public class UserRepository(AppDbContext context) : IUserRepository
 
         _context.Users.Add(entity); 
 
-        await _context.SaveChangesAsync(cancellationToken);
+        try
+        {
+            await _context.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateException ex) when (IsDuplicateEmail(ex))
+        {
+            // The SQL unique constraint is authoritative when signups race.
+            _context.Entry(entity).State = EntityState.Detached;
+            throw new ConflictException("An account with this email already exists.");
+        }
         
        
-        // Entity -> DTO (so PasswordHash never leaves this layer).
+        // Return public user data; the login projection separately includes the hash for verification.
         return new UserDto
         {
             UserId = entity.UserId,
@@ -56,5 +72,27 @@ public class UserRepository(AppDbContext context) : IUserRepository
             IsActive = entity.IsActive,
             CreatedAt = entity.CreatedAt
         };
+    }
+
+    private static bool IsDuplicateEmail(DbUpdateException exception)
+    {
+        var sqlException = exception.InnerException as SqlException;
+        if (sqlException == null)
+        {
+            return false;
+        }
+
+        foreach (SqlError error in sqlException.Errors)
+        {
+            bool isUniqueConstraintError = error.Number == 2601 || error.Number == 2627;
+            bool isEmailConstraint = error.Message.Contains("UniqueNormalizedEmail", StringComparison.Ordinal);
+
+            if (isUniqueConstraintError && isEmailConstraint)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

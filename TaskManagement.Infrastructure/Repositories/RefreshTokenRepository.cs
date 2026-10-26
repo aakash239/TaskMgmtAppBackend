@@ -6,9 +6,14 @@ using TaskManagement.Infrastructure.Entities;
 
 namespace TaskManagement.Infrastructure.Repositories;
 
-public class RefreshTokenRepository(AppDbContext context): IRefreshTokenRepository
+public class RefreshTokenRepository : IRefreshTokenRepository
 {
-    private readonly AppDbContext _context = context;
+    private readonly AppDbContext _context;
+
+    public RefreshTokenRepository(AppDbContext context)
+    {
+        _context = context;
+    }
 
     public async Task<RefreshTokenData?> GetByTokenHashAsync(string tokenHash, CancellationToken cancellationToken)
     {
@@ -23,13 +28,25 @@ public class RefreshTokenRepository(AppDbContext context): IRefreshTokenReposito
                             rt.Session.RevokedAt,
                             rt.RevokedAt,
                             rt.ReplacedByTokenId,
-                            rt.Session.User.IsActive
+                            rt.Session.User.IsActive,
+                            rt.Session.User.Name,
+                            rt.Session.User.Email
                         )).SingleOrDefaultAsync(cancellationToken);
     }
 
-    public async Task CreateSessionAsync(int userId, Guid sessionId, string tokenHash, DateTime expiresAt, CancellationToken cancellationToken = default)
+    public async Task CreateSessionAsync(int userId, Guid sessionId, string tokenHash, DateTime expiresAt, int maxActiveSessions, CancellationToken cancellationToken = default)
     {
+        if (maxActiveSessions < 1)
+        {
+            throw new ArgumentOutOfRangeException(nameof(maxActiveSessions), maxActiveSessions,
+                "At least one active session must be allowed.");
+        }
+
         var now = DateTime.UtcNow;
+        if (expiresAt <= now)
+        {
+            throw new ArgumentOutOfRangeException(nameof(expiresAt), "Session expiry must be in the future.");
+        }
 
         var activeSessions = await _context.UserSessions
                                         .Where(s => s.UserId == userId && s.RevokedAt == null && s.ExpiresAt > now)
@@ -37,16 +54,16 @@ public class RefreshTokenRepository(AppDbContext context): IRefreshTokenReposito
                                         .ThenBy(s => s.SessionId)
                                         .ToListAsync(cancellationToken);
 
-        if (activeSessions.Count >= 3)
+        if (activeSessions.Count >= maxActiveSessions)
         {
-            int sessionsToRevoke = activeSessions.Count - 2;
+            int sessionsToRevoke = activeSessions.Count - maxActiveSessions + 1;
             foreach (var session in activeSessions.Take(sessionsToRevoke))
             {
                 session.RevokedAt = now;
             }
         }
 
-        var UserSession = new UserSession
+        var userSession = new UserSession
         {
             SessionId = sessionId,
             UserId = userId,
@@ -62,7 +79,7 @@ public class RefreshTokenRepository(AppDbContext context): IRefreshTokenReposito
             ExpiresAt = expiresAt
         };
 
-        _context.UserSessions.Add(UserSession);
+        _context.UserSessions.Add(userSession);
         _context.RefreshTokens.Add(refreshToken);
 
         await _context.SaveChangesAsync(cancellationToken);
@@ -72,16 +89,33 @@ public class RefreshTokenRepository(AppDbContext context): IRefreshTokenReposito
     {
         var now = DateTime.UtcNow;
 
-        var oldToken = await _context.RefreshTokens.Include(rt => rt.Session)
+        var oldToken = await _context.RefreshTokens.Include(rt => rt.Session).ThenInclude(s => s.User)
                                     .FirstOrDefaultAsync(rt => rt.RefreshTokenId == refreshTokenId, cancellationToken);
 
-        if( oldToken == null || 
-            oldToken.RevokedAt != null ||
-            oldToken.ExpiresAt <= now ||
-            oldToken.Session.RevokedAt != null ||
-            oldToken.Session.ExpiresAt <= now)
+        if (oldToken == null)
         {
             return false;
+        }
+
+        if (oldToken.RevokedAt != null || oldToken.ReplacedByTokenId != null || oldToken.ExpiresAt <= now)
+        {
+            return false;
+        }
+
+        if (oldToken.Session.RevokedAt != null || oldToken.Session.ExpiresAt <= now)
+        {
+            return false;
+        }
+
+        if (!oldToken.Session.User.IsActive || expiresAt <= now)
+        {
+            return false;
+        }
+
+        var newExpiresAt = expiresAt;
+        if (newExpiresAt > oldToken.Session.ExpiresAt)
+        {
+            newExpiresAt = oldToken.Session.ExpiresAt;
         }
 
         var newToken = new RefreshToken
@@ -89,7 +123,7 @@ public class RefreshTokenRepository(AppDbContext context): IRefreshTokenReposito
             SessionId = oldToken.SessionId,
             TokenHash = newTokenHash,
             CreatedAt = now,
-            ExpiresAt = expiresAt < oldToken.Session.ExpiresAt ? expiresAt : oldToken.Session.ExpiresAt
+            ExpiresAt = newExpiresAt
         };
 
         oldToken.RevokedAt = now;

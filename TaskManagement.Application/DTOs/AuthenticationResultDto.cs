@@ -1,9 +1,10 @@
+using System.Text.Json.Serialization;
+
 namespace TaskManagement.Application.DTOs;
 
-// used internally between Application and API
-// Extract RefreshToken put it in HttpOnly cookie and return access token info to angular
+// Internal result: controllers return Response and write the refresh secret only to a cookie.
 public sealed record AuthenticationResultDto(
-    string AccessToken,
-    string RefreshToken,
-    DateTime AccessTokenExpiresAt
+    AuthResponseDto Response,
+    [property: JsonIgnore] string RefreshToken,
+    DateTime RefreshTokenExpiresAtUtc
 );
