@@ -27,7 +27,7 @@ public class JwtTokenService : IJwtTokenService
         }   
     }
 
-    public JwtTokenDto GenerateAccessToken(JwtCreationDto user)
+    public AccessTokenDto GenerateAccessToken(JwtClaimsDto user)
     {
         // create claims
         var claims = new List<Claim>
@@ -63,6 +63,6 @@ public class JwtTokenService : IJwtTokenService
         var tokenString = tokenHandler.WriteToken(token);
 
         // return result
-        return new JwtTokenDto(tokenString, expires);
+        return new AccessTokenDto(tokenString, expires);
     }
 }

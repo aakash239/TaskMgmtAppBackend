@@ -17,12 +17,12 @@ public class UserRepository : IUserRepository
         _context = context;
     }
 
-    public async Task<LoginUserDto?> GetByNormalizedEmailAsync(string normalizedEmail, CancellationToken cancellationToken = default)
+    public async Task<UserCredentialsDto?> GetByNormalizedEmailAsync(string normalizedEmail, CancellationToken cancellationToken = default)
     {
         return await _context.Users
                             .AsNoTracking()
                             .Where(u => u.NormalizedEmail == normalizedEmail)
-                            .Select(u => new LoginUserDto(
+                            .Select(u => new UserCredentialsDto(
                                 u.UserId,
                                 u.Name,
                                 u.Email,
@@ -30,13 +30,7 @@ public class UserRepository : IUserRepository
                                 u.IsActive
                             )).FirstOrDefaultAsync(cancellationToken);
     }
-    public Task<bool> EmailExistsAsync(string normalizedEmail, CancellationToken cancellationToken = default)
-    {
-       
-        return _context.Users.AnyAsync(u => u.NormalizedEmail == normalizedEmail, cancellationToken);
-    }
-
-    public async Task<UserDto> CreateAsync(CreateUserDto dto, CancellationToken cancellationToken = default)
+    public async Task<CreatedUserDto> CreateAsync(UserInsertDto dto, CancellationToken cancellationToken = default)
     {
         // DTO -> entity.
         var entity = new User
@@ -57,14 +51,14 @@ public class UserRepository : IUserRepository
         }
         catch (DbUpdateException ex) when (IsDuplicateEmail(ex))
         {
-            // The SQL unique constraint is authoritative when signups race.
+            // Translate the normalized-email constraint into a signup conflict.
             _context.Entry(entity).State = EntityState.Detached;
             throw new ConflictException("An account with this email already exists.");
         }
         
        
         // Return public user data; the login projection separately includes the hash for verification.
-        return new UserDto
+        return new CreatedUserDto
         {
             UserId = entity.UserId,
             Name = entity.Name,

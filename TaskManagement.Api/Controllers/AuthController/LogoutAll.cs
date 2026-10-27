@@ -17,7 +17,7 @@ public partial class AuthController: ControllerBase
         }
 
         await _authService.LogoutAllAsync(userId, cancellationToken);
-        ClearRefreshTokenCookie();
+        Response.Cookies.Delete(RefreshCookieName, GetRefreshCookieOptions());
         return NoContent();
     }
 }

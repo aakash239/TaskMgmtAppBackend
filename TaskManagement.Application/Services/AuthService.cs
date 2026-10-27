@@ -1,33 +1,23 @@
 using TaskManagement.Application.DTOs;
 using TaskManagement.Application.Interfaces;
 using TaskManagement.Core.Constants;
-using TaskManagement.Core.Exceptions;
 
 namespace TaskManagement.Application.Services;
 
-public class AuthService : IAuthService
+public class AuthService(
+    IUserRepository userRepository,
+    IPasswordService passwordService,
+    IJwtTokenService jwtTokenService,
+    IRefreshTokenRepository refreshTokenRepository,
+    IRefreshTokenGenerator refreshTokenGenerator) : IAuthService
 {
-    private readonly IUserRepository _userRepository;
-    private readonly IPasswordService _passwordService;
-    private readonly IJwtTokenService _jwtTokenService;
-    private readonly IRefreshTokenRepository _refreshTokenRepository;
-    private readonly IRefreshTokenGenerator _refreshTokenGenerator;
+    private readonly IUserRepository _userRepository = userRepository;
+    private readonly IPasswordService _passwordService = passwordService;
+    private readonly IJwtTokenService _jwtTokenService = jwtTokenService;
+    private readonly IRefreshTokenRepository _refreshTokenRepository = refreshTokenRepository;
+    private readonly IRefreshTokenGenerator _refreshTokenGenerator = refreshTokenGenerator;
 
-    public AuthService(
-        IUserRepository userRepository,
-        IPasswordService passwordService,
-        IJwtTokenService jwtTokenService,
-        IRefreshTokenRepository refreshTokenRepository,
-        IRefreshTokenGenerator refreshTokenGenerator)
-    {
-        _userRepository = userRepository;
-        _passwordService = passwordService;
-        _jwtTokenService = jwtTokenService;
-        _refreshTokenRepository = refreshTokenRepository;
-        _refreshTokenGenerator = refreshTokenGenerator;
-    }
-
-    public async Task<AuthenticationResultDto?> LoginAsync(LoginRequestDto request, CancellationToken cancellationToken = default)
+    public async Task<AuthSessionResultDto?> LoginAsync(LoginRequestDto request, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password))
         {
@@ -47,31 +37,25 @@ public class AuthService : IAuthService
             return null;
         }
 
-        var jwtUser = new JwtCreationDto(user.UserId, user.Name, user.Email);
+        var jwtUser = new JwtClaimsDto(user.UserId, user.Name, user.Email);
         return await CreateSessionAsync(jwtUser, cancellationToken);
     }
 
-    public async Task<AuthenticationResultDto> SignUpAsync(UserSignUpDto request, CancellationToken cancellationToken = default)
+    public async Task<AuthSessionResultDto> SignUpAsync(SignUpRequestDto request, CancellationToken cancellationToken = default)
     {
         var name = request.Name.Trim();
         var email = request.Email.Trim();
         var normalizedEmail = email.ToUpperInvariant();
 
-        var emailExists = await _userRepository.EmailExistsAsync(normalizedEmail, cancellationToken);
-        if (emailExists)
-        {
-            throw new ConflictException("An account with this email already exists.");
-        }
-
         var passwordHash = _passwordService.HashPassword(request.Password);
-        var newUser = new CreateUserDto(name, email, normalizedEmail, passwordHash);
+        var newUser = new UserInsertDto(name, email, normalizedEmail, passwordHash);
         var user = await _userRepository.CreateAsync(newUser, cancellationToken);
 
-        var jwtUser = new JwtCreationDto(user.UserId, user.Name, user.Email);
+        var jwtUser = new JwtClaimsDto(user.UserId, user.Name, user.Email);
         return await CreateSessionAsync(jwtUser, cancellationToken);
     }
 
-    public async Task<AuthenticationResultDto?> RefreshTokenAsync(string? refreshToken, CancellationToken cancellationToken = default)
+    public async Task<AuthSessionResultDto?> RefreshTokenAsync(string? refreshToken, CancellationToken cancellationToken = default)
     {
         var data = await FindTokenAsync(refreshToken, cancellationToken);
         var now = DateTime.UtcNow;
@@ -94,7 +78,7 @@ public class AuthService : IAuthService
         var expiresAt = DateTime.SpecifyKind(data.SessionExpiresAt, DateTimeKind.Utc);
         var replacement = _refreshTokenGenerator.GenerateRefreshToken();
         var replacementHash = _refreshTokenGenerator.HashRefreshToken(replacement);
-        var jwtUser = new JwtCreationDto(data.UserId, data.Name, data.Email);
+        var jwtUser = new JwtClaimsDto(data.UserId, data.Name, data.Email);
         var accessToken = _jwtTokenService.GenerateAccessToken(jwtUser);
 
         var rotated = await _refreshTokenRepository.RotateTokenAsync(
@@ -104,7 +88,9 @@ public class AuthService : IAuthService
             return null;
         }
 
-        return CreateResult(jwtUser, accessToken, replacement, expiresAt);
+        var response = new AuthResponseDto(
+            jwtUser.UserId, jwtUser.Name, jwtUser.Email, accessToken.AccessToken, accessToken.ExpiresAtUtc);
+        return new AuthSessionResultDto(response, replacement, expiresAt);
     }
 
     public async Task LogoutAsync(string? refreshToken, CancellationToken cancellationToken = default)
@@ -124,12 +110,12 @@ public class AuthService : IAuthService
         await _refreshTokenRepository.RevokeSessionsAsync(data.SessionId, cancellationToken);
     }
 
-    public async Task LogoutAllAsync(int userId, CancellationToken cancellationToken = default)
+    public Task LogoutAllAsync(int userId, CancellationToken cancellationToken = default)
     {
-        await _refreshTokenRepository.RevokeAllSessionsAsync(userId, cancellationToken);
+        return _refreshTokenRepository.RevokeAllSessionsAsync(userId, cancellationToken);
     }
 
-    private async Task<RefreshTokenData?> FindTokenAsync(string? token, CancellationToken cancellationToken)
+    private async Task<RefreshTokenLookupDto?> FindTokenAsync(string? token, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(token) || token.Length > 256)
         {
@@ -140,7 +126,7 @@ public class AuthService : IAuthService
         return await _refreshTokenRepository.GetByTokenHashAsync(tokenHash, cancellationToken);
     }
 
-    private async Task<AuthenticationResultDto> CreateSessionAsync(JwtCreationDto user, CancellationToken cancellationToken)
+    private async Task<AuthSessionResultDto> CreateSessionAsync(JwtClaimsDto user, CancellationToken cancellationToken)
     {
         var token = _refreshTokenGenerator.GenerateRefreshToken();
         var tokenHash = _refreshTokenGenerator.HashRefreshToken(token);
@@ -152,12 +138,8 @@ public class AuthService : IAuthService
         await _refreshTokenRepository.CreateSessionAsync(
             user.UserId, sessionId, tokenHash, expiresAt, AuthConstants.MaximumActiveSessions, cancellationToken);
 
-        return CreateResult(user, accessToken, token, expiresAt);
-    }
-
-    private static AuthenticationResultDto CreateResult(JwtCreationDto user, JwtTokenDto token, string refreshToken, DateTime refreshExpiresAt)
-    {
-        var response = new AuthResponseDto(user.UserId, user.Name, user.Email, token.AccessToken, token.ExpiresAtUtc);
-        return new AuthenticationResultDto(response, refreshToken, refreshExpiresAt);
+        var response = new AuthResponseDto(
+            user.UserId, user.Name, user.Email, accessToken.AccessToken, accessToken.ExpiresAtUtc);
+        return new AuthSessionResultDto(response, token, expiresAt);
     }
 }

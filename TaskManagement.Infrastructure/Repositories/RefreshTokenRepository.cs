@@ -15,11 +15,11 @@ public class RefreshTokenRepository : IRefreshTokenRepository
         _context = context;
     }
 
-    public async Task<RefreshTokenData?> GetByTokenHashAsync(string tokenHash, CancellationToken cancellationToken)
+    public async Task<RefreshTokenLookupDto?> GetByTokenHashAsync(string tokenHash, CancellationToken cancellationToken)
     {
         return await _context.RefreshTokens.AsNoTracking()
                         .Where(rt => rt.TokenHash == tokenHash)
-                        .Select(rt => new RefreshTokenData(
+                        .Select(rt => new RefreshTokenLookupDto(
                             rt.RefreshTokenId,
                             rt.SessionId,
                             rt.Session.UserId,

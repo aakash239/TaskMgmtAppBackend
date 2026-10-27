@@ -7,6 +7,7 @@
 AGENTS.md
 architecturedocs.md
 /docs/architecture-decisions.md
+/docs/project-code-study-guide.md
 *.rsuser
 *.suo
 *.user

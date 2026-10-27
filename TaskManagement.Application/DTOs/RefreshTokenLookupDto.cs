@@ -1,6 +1,6 @@
 namespace TaskManagement.Application.DTOs;
 
-public sealed record RefreshTokenData(
+public sealed record RefreshTokenLookupDto(
     long RefreshTokenId,
     Guid SessionId,
     int UserId,

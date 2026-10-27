@@ -12,7 +12,7 @@ public partial class AuthController: ControllerBase
     {
         var refreshToken = Request.Cookies[RefreshCookieName];
         await _authService.LogoutAsync(refreshToken, cancellationToken);
-        ClearRefreshTokenCookie();
+        Response.Cookies.Delete(RefreshCookieName, GetRefreshCookieOptions());
         return NoContent();
     }
 }

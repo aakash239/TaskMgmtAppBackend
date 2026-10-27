@@ -4,7 +4,7 @@ namespace TaskManagement.Application.Interfaces;
 
 public interface IRefreshTokenRepository
 {
-    Task<RefreshTokenData?> GetByTokenHashAsync(string tokenHash, CancellationToken cancellationToken = default);
+    Task<RefreshTokenLookupDto?> GetByTokenHashAsync(string tokenHash, CancellationToken cancellationToken = default);
     Task CreateSessionAsync(int userId, Guid sessionId, string tokenHash, DateTime expiresAt, int maxActiveSessions, CancellationToken cancellationToken = default);
     Task <bool> RotateTokenAsync(long refreshTokenId, string newTokenHash, DateTime expiresAt, CancellationToken cancellationToken = default);
     Task <bool> RevokeSessionsAsync(Guid sessionId, CancellationToken cancellationToken = default);

@@ -74,11 +74,6 @@ public partial class AuthController : ControllerBase, IActionFilter
         Response.Cookies.Append(RefreshCookieName, token, options);
     }
 
-    private void ClearRefreshTokenCookie()
-    {
-        Response.Cookies.Delete(RefreshCookieName, GetRefreshCookieOptions());
-    }
-
     private CookieOptions GetRefreshCookieOptions()
     {
         var options = new CookieOptions
