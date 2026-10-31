@@ -1,6 +1,6 @@
 namespace TaskManagement.Application.DTOs;
 
-public record JwtTokenDto(
+public record AccessTokenDto(
     string AccessToken,
     DateTime ExpiresAtUtc
 );

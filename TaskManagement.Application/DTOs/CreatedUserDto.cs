@@ -2,7 +2,7 @@ namespace TaskManagement.Application.DTOs;
 
 // A safe representation of a user that is returned by the repository.
 // PasswordHash.Deliberately Excluded.
-public class UserDto
+public class CreatedUserDto
 {
     public int UserId { get; set; }
     public string Name { get; set; } = string.Empty;

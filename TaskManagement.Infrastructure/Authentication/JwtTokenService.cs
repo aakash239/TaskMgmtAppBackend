@@ -27,15 +27,15 @@ public class JwtTokenService : IJwtTokenService
         }   
     }
 
-    public JwtTokenDto GenerateAccessToken(JwtCreationDto user)
+    public AccessTokenDto GenerateAccessToken(JwtClaimsDto user)
     {
         // create claims
         var claims = new List<Claim>
         {
-            new(JwtRegisteredClaimNames.Sub, user.UserId.ToString()),  
-            new(JwtRegisteredClaimNames.Name, user.Name.ToString()),
-            new(JwtRegisteredClaimNames.Email, user.Email.ToString()),
-            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+            new Claim(JwtRegisteredClaimNames.Sub, user.UserId.ToString()),
+            new Claim(JwtRegisteredClaimNames.Name, user.Name),
+            new Claim(JwtRegisteredClaimNames.Email, user.Email),
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
 
         // create signing key
@@ -59,9 +59,10 @@ public class JwtTokenService : IJwtTokenService
         );
 
         //serialize JWT
-        var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var tokenString = tokenHandler.WriteToken(token);
 
         // return result
-        return new JwtTokenDto(tokenString, expires);
+        return new AccessTokenDto(tokenString, expires);
     }
 }

@@ -4,8 +4,9 @@ namespace TaskManagement.Application.Interfaces;
 
 public interface IAuthService
 {
-    // returns a successful loginresponseDTo if login is successful else returns null.
-    Task<AuthResponseDto?> LoginAsync(LoginRequestDto request, CancellationToken cancellationToken = default);  
-
-    Task<AuthResponseDto> SignUpAsync(UserSignUpDto request, CancellationToken cancellationToken = default);
+    Task<AuthSessionResultDto?> LoginAsync(LoginRequestDto request, CancellationToken cancellationToken = default);
+    Task<AuthSessionResultDto> SignUpAsync(SignUpRequestDto request, CancellationToken cancellationToken = default);
+    Task<AuthSessionResultDto?> RefreshTokenAsync(string? refreshToken, CancellationToken cancellationToken = default);
+    Task LogoutAsync(string? refreshToken, CancellationToken cancellationToken = default);
+    Task LogoutAllAsync(int userId, CancellationToken cancellationToken = default);
 }
