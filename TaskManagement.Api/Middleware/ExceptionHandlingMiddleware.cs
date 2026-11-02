@@ -6,7 +6,7 @@ namespace TaskManagement.Api.Middleware;
 // Catches exceptions from anywhere below it and converts them to clean JSON responses.
 public class ExceptionHandlingMiddleware
 {
-    private readonly RequestDelegate _next;                       // the next step in the pipeline
+    private readonly RequestDelegate _next;                       
     private readonly ILogger<ExceptionHandlingMiddleware> _logger;
 
     public ExceptionHandlingMiddleware(RequestDelegate next, ILogger<ExceptionHandlingMiddleware> logger)
@@ -19,16 +19,24 @@ public class ExceptionHandlingMiddleware
     {
         try
         {
-            await _next(context); // run the rest of the pipeline (controller etc.)
+            await _next(context); // run the rest of the pipeline 
         }
         catch (ConflictException ex)
         {
-            // Expected business error -> 409 Conflict, no scary logging.
+           
             await WriteProblem(context, StatusCodes.Status409Conflict, "Conflict", ex.Message);
+        }
+        catch(NotFoundException ex)
+        {
+            await WriteProblem(context, StatusCodes.Status404NotFound, "Not Found", ex.Message);
+        }
+        catch(ForbiddenException ex)
+        {
+             await WriteProblem(context, StatusCodes.Status403Forbidden, "Forbidden", ex.Message);
         }
         catch (Exception ex)
         {
-            // Unexpected -> log full details server-side, but hide them from the client.
+            
             _logger.LogError(ex, "Unhandled exception");
             await WriteProblem(context, StatusCodes.Status500InternalServerError,
                 "Server error", "An unexpected error occurred.");
