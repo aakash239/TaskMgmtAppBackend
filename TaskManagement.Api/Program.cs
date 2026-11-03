@@ -2,6 +2,7 @@ using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using TaskManagement.Api;
 using TaskManagement.Application.Interfaces;
 using TaskManagement.Api.Middleware;
 using TaskManagement.Application;
@@ -14,6 +15,9 @@ var builder = WebApplication.CreateBuilder(args);
 // ---------- Application & Infrastructure services ----------
 builder.Services.AddApplication();                          // AuthService
 builder.Services.AddInfrastructure(builder.Configuration);  // repository, hasher, JWT generator, JwtSettings binding
+builder.Services.AddHttpContextAccessor(); // this lets current user see the current request 
+builder.Services.AddScoped<ICurrentUserService, CurrentUser>();
+
 
 builder.Services.AddAuthorization();                             // enables [Authorize]
 
