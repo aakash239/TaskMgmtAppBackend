@@ -6,14 +6,9 @@ using TaskManagement.Infrastructure.Entities;
 
 namespace TaskManagement.Infrastructure.Repositories;
 
-public class RefreshTokenRepository : IRefreshTokenRepository
+public class RefreshTokenRepository(AppDbContext context) : IRefreshTokenRepository
 {
-    private readonly AppDbContext _context;
-
-    public RefreshTokenRepository(AppDbContext context)
-    {
-        _context = context;
-    }
+    private readonly AppDbContext _context = context;
 
     public async Task<RefreshTokenLookupDto?> GetByTokenHashAsync(string tokenHash, CancellationToken cancellationToken)
     {
