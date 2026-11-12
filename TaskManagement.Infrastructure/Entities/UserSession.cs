@@ -11,5 +11,5 @@ public class UserSession
 
     // Navigation Properties: describe relatinships to efCore
     public User User {get; set;} = null!;
-    public ICollection<RefreshToken> RefreshTokens {get; set;} = new List<RefreshToken>(); 
+    public ICollection<RefreshToken> RefreshTokens {get; set;} = []; 
 }
