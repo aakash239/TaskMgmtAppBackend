@@ -3,12 +3,8 @@ using TaskManagement.Infrastructure.Entities;
 
 namespace TaskManagement.Infrastructure.Data;
 
-public partial class AppDbContext : DbContext
+public partial class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
 {
-    public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
-    {
-    }
-
     public DbSet<User> Users
     {
         get { return Set<User>(); }

@@ -4,16 +4,10 @@ using TaskManagement.Core.Exceptions;
 namespace TaskManagement.Api.Middleware;
 
 // Catches exceptions from anywhere below it and converts them to clean JSON responses.
-public class ExceptionHandlingMiddleware
+public class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<ExceptionHandlingMiddleware> logger)
 {
-    private readonly RequestDelegate _next;                       // the next step in the pipeline
-    private readonly ILogger<ExceptionHandlingMiddleware> _logger;
-
-    public ExceptionHandlingMiddleware(RequestDelegate next, ILogger<ExceptionHandlingMiddleware> logger)
-    {
-        _next = next;
-        _logger = logger;
-    }
+    private readonly RequestDelegate _next = next;                       // the next step in the pipeline
+    private readonly ILogger<ExceptionHandlingMiddleware> _logger = logger;
 
     public async Task InvokeAsync(HttpContext context)
     {

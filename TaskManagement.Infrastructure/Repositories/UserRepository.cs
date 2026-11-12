@@ -8,14 +8,9 @@ using TaskManagement.Core.Exceptions;
 
 namespace TaskManagement.Infrastructure.Repositories;
 
-public class UserRepository : IUserRepository
+public class UserRepository(AppDbContext context) : IUserRepository
 {
-    private readonly AppDbContext _context;
-
-    public UserRepository(AppDbContext context)
-    {
-        _context = context;
-    }
+    private readonly AppDbContext _context = context;
 
     public async Task<UserCredentialsDto?> GetByNormalizedEmailAsync(string normalizedEmail, CancellationToken cancellationToken = default)
     {
