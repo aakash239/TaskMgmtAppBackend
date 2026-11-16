@@ -32,6 +32,8 @@ public static class DependencyInjection
         services.AddSingleton<IJwtTokenService, JwtTokenService>();
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
         services.AddSingleton<IRefreshTokenGenerator, RefreshTokenGenerator>();
+        services.AddScoped<IKanbanTemplateRepositiory, KanbanTemplateRepository>();
+        services.AddScoped<IBoardRepository, BoardRepository>();
 
         var connectionString = configuration.GetConnectionString("defaultConnection");
         if (connectionString == null)
