@@ -1,7 +1,6 @@
 namespace TaskManagement.Application.DTOs;
 
-public record CreateKanbanTemplateDto(
-    int UserId,
+public record CreateKanbanTemplateDto( // userId will be supplied via claims so users cannot give arbitrary userId's
     string Name,
     string? Description,
     List<CreateTemplateColumnDto> Columns

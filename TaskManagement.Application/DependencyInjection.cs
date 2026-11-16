@@ -11,6 +11,8 @@ public static class DependencyInjection
     {
         // Scoped = one instance per HTTP request.
         services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<IKanbanTemplateService, KanbanTemplateService>();
+        services.AddScoped<IBoardService, BoardService>();
         return services;
     }
 }
