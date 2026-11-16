@@ -20,6 +20,15 @@ public class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<Exception
             // Expected business error -> 409 Conflict, no scary logging.
             await WriteProblem(context, StatusCodes.Status409Conflict, "Conflict", ex.Message);
         }
+        catch (ArgumentException ex)
+        {
+            await WriteProblem(context, StatusCodes.Status400BadRequest, "Bad Request", ex.Message);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            await WriteProblem(context, StatusCodes.Status400BadRequest, "Not Found", ex.Message);
+        }
+
         catch (Exception ex)
         {
             // Unexpected -> log full details server-side, but hide them from the client.

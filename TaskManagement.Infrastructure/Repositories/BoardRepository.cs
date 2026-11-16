@@ -61,7 +61,7 @@ public class BoardRepository (AppDbContext context) : IBoardRepository
                                     .FirstOrDefaultAsync(t => t.TemplateId == dto.TemplateId && t.UserId == userId, cancellationToken);
 
         if (template == null)
-            throw new InvalidOperationException("Kanban Template Not Found");
+            throw new KeyNotFoundException("Kanban template Not found");
         
         var board = new Board
         {
