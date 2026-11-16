@@ -17,7 +17,7 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options) : DbCo
     public DbSet<KanbanTemplateColumn> KanbanTemplateColumns => Set<KanbanTemplateColumn>();
 
     // User Boards
-    public DbSet<Board> Board => Set<Board>();
+    public DbSet<Board> Boards => Set<Board>();
     public DbSet<BoardColumn> BoardColumns => Set<BoardColumn>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
