@@ -1,0 +1,109 @@
+@baseUrl = http://localhost:5005
+
+# Use an existing test account
+@testEmail = testuser101@example.com
+@testPassword = SecurePass@123
+
+### 01. LOGIN
+# @name login
+POST {{baseUrl}}/api/auth/login
+X-CSRF: 1
+Content-Type: application/json
+
+{
+    "email": "{{testEmail}}",
+    "password": "{{testPassword}}"
+}
+
+### 02. GET ALL TEMPLATES
+GET {{baseUrl}}/api/kanban-templates
+Authorization: Bearer {{login.response.body.$.accessToken}}
+
+### 03. CREATE KANBAN TEMPLATE
+# @name createTemplate
+POST {{baseUrl}}/api/kanban-templates
+Authorization: Bearer {{login.response.body.$.accessToken}}
+Content-Type: application/json
+
+{
+    "name": "Development Workflow",
+    "description": "Standard software development workflow",
+    "columns": [
+        {
+            "name": "Backlog",
+            "description": "Tasks waiting to be started",
+            "position": 1
+        },
+        {
+            "name": "To Do",
+            "description": "Tasks ready for development",
+            "position": 2
+        },
+        {
+            "name": "In Progress",
+            "description": "Currently being worked on",
+            "position": 3
+        },
+        {
+            "name": "Code Review",
+            "description": "Tasks awaiting review",
+            "position": 4
+        },
+        {
+            "name": "Completed",
+            "description": "Finished tasks",
+            "position": 5
+        }
+    ]
+}
+
+### 04. GET CREATED TEMPLATE
+GET {{baseUrl}}/api/kanban-templates/{{createTemplate.response.body.$.templateId}}
+Authorization: Bearer {{login.response.body.$.accessToken}}
+
+### 05. CREATE BOARD FROM TEMPLATE
+# @name createBoard
+POST {{baseUrl}}/api/boards
+Authorization: Bearer {{login.response.body.$.accessToken}}
+Content-Type: application/json
+
+{
+    "templateId": {{createTemplate.response.body.$.templateId}},
+    "name": "Task Management Project",
+    "description": "Main development board"
+}
+
+### 06. GET ALL BOARDS
+GET {{baseUrl}}/api/boards
+Authorization: Bearer {{login.response.body.$.accessToken}}
+
+### 07. GET CREATED BOARD
+GET {{baseUrl}}/api/boards/{{createBoard.response.body.$.boardId}}
+Authorization: Bearer {{login.response.body.$.accessToken}}
+
+### 08. ACCESS NONEXISTENT BOARD
+GET {{baseUrl}}/api/boards/999999
+Authorization: Bearer {{login.response.body.$.accessToken}}
+
+### 09. ACCESS WITHOUT AUTHENTICATION
+GET {{baseUrl}}/api/boards
+
+### 10. ACCESS WITH INVALID TOKEN
+GET {{baseUrl}}/api/boards
+Authorization: Bearer invalid.token.value
+
+### 11. DELETE BOARD
+DELETE {{baseUrl}}/api/boards/{{createBoard.response.body.$.boardId}}
+Authorization: Bearer {{login.response.body.$.accessToken}}
+
+### 12. VERIFY BOARD DELETION
+GET {{baseUrl}}/api/boards/{{createBoard.response.body.$.boardId}}
+Authorization: Bearer {{login.response.body.$.accessToken}}
+
+### 13. DELETE TEMPLATE
+DELETE {{baseUrl}}/api/kanban-templates/{{createTemplate.response.body.$.templateId}}
+Authorization: Bearer {{login.response.body.$.accessToken}}
+
+### 14. VERIFY TEMPLATE DELETION
+GET {{baseUrl}}/api/kanban-templates/{{createTemplate.response.body.$.templateId}}
+Authorization: Bearer {{login.response.body.$.accessToken}}
