@@ -9,7 +9,7 @@ public partial class BoardsController
     [HttpPost]
     public async Task<IActionResult> Create(CreateBoardDto dto, CancellationToken cancellationToken)
     {
-        var templateId = await _boardService.CreateBoardAsync(UserId, dto, cancellationToken);
-        return CreatedAtAction(nameof(GetById), new {templateId}, new {templateId});
+        var boardId = await _boardService.CreateBoardAsync(UserId, dto, cancellationToken);
+        return CreatedAtAction(nameof(GetById), new {boardId}, new {boardId});
     }
 }

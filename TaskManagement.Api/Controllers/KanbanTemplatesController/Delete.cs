@@ -9,7 +9,7 @@ public partial class KanbanTemplatesController
     public async Task<IActionResult> Delete(int templateId, CancellationToken cancellationToken)
     {
         var deleted = await _templateService.DeleteAsync(templateId, UserId, cancellationToken);
-        if(deleted)
+        if(!deleted)
             return NotFound();
         return NoContent();
     }
