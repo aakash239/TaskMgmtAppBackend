@@ -1,29 +1,41 @@
-# New SDK-style SQL project with Microsoft.Build.Sql
+﻿# SQL Server schema deployment
 
-## Build
+`TaskManagement.Database.sqlproj` is the schema source for `dbo.Users`,
+`dbo.UserSessions`, and `dbo.RefreshTokens`. EF Core maps those tables at runtime;
+the API does not create the database or apply EF migrations at startup.
 
-To build the project, run the following command:
+Run these commands from the solution root. Build the database artifact:
 
-```bash
-dotnet build
+```powershell
+dotnet build TaskManagement.Database/TaskManagement.Database.sqlproj
 ```
 
-🎉 Congrats! You have successfully built the project and now have a `dacpac` to deploy anywhere.
+The output is `TaskManagement.Database/bin/Debug/TaskManagement.Database.dacpac`.
+Use the SqlPackage CLI or the SQL Database Projects extension to deploy it.
+Keep credentials in your local environment or secret store, outside Git.
 
-## Publish
+Before publishing to an existing database, generate a deployment script and report
+against the intended target using a locally supplied connection string:
 
-To publish the project, the SqlPackage CLI or the SQL Database Projects extension for VS Code is required. The following command will publish the project to a local SQL Server instance:
-
-```bash
-sqlpackage /Action:Publish /SourceFile:bin/Debug/TaskManagement.Database.dacpac /TargetServerName:localhost /TargetDatabaseName:TaskManagement.Database
+```powershell
+sqlpackage /Action:DeployReport /SourceFile:TaskManagement.Database/bin/Debug/TaskManagement.Database.dacpac /TargetConnectionString:$env:TASKMANAGEMENT_DB_CONNECTION /OutputPath:TaskManagement.Database/bin/Debug/deployment-report.xml
+sqlpackage /Action:Script /SourceFile:TaskManagement.Database/bin/Debug/TaskManagement.Database.dacpac /TargetConnectionString:$env:TASKMANAGEMENT_DB_CONNECTION /OutputPath:TaskManagement.Database/bin/Debug/deployment.sql /p:BlockOnPossibleDataLoss=True /p:DropObjectsNotInSource=False
 ```
 
-Learn more about authentication and other options for SqlPackage here: https://aka.ms/sqlpackage-ref
+Review both artifacts before applying the update. This update allows null
+`UserSessions.LastActivityAt` and `RevokedAt`, and adds the foreign key from
+`RefreshTokens.SessionId` to `UserSessions.SessionId`. Existing orphaned token
+rows will prevent that foreign key from being installed; investigate and repair
+their ownership before publishing. Existing session revocation values are
+preserved; changing nullability does not reactivate old sessions.
 
-### Install SqlPackage CLI
+After reviewing the target and deployment script, publish explicitly:
 
-If you would like to use the command-line utility SqlPackage.exe for deploying the `dacpac`, you can obtain it as a dotnet tool.  The tool is available for Windows, macOS, and Linux.
-
-```bash
-dotnet tool install -g microsoft.sqlpackage
+```powershell
+sqlpackage /Action:Publish /SourceFile:TaskManagement.Database/bin/Debug/TaskManagement.Database.dacpac /TargetConnectionString:$env:TASKMANAGEMENT_DB_CONNECTION /p:BlockOnPossibleDataLoss=True /p:DropObjectsNotInSource=False
 ```
+
+Verify the deployed column nullability, unique constraints, foreign keys and
+expiration checks in SQL Server, then run the authentication HTTP request
+collections against the configured API. A successful DACPAC build alone
+does not verify the deployed database or browser behavior.

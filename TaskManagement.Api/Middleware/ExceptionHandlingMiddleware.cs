@@ -4,16 +4,14 @@ using TaskManagement.Core.Exceptions;
 namespace TaskManagement.Api.Middleware;
 
 // Catches exceptions from anywhere below it and converts them to clean JSON responses.
-public class ExceptionHandlingMiddleware
+public class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<ExceptionHandlingMiddleware> logger)
 {
-    private readonly RequestDelegate _next;                       
-    private readonly ILogger<ExceptionHandlingMiddleware> _logger;
 
-    public ExceptionHandlingMiddleware(RequestDelegate next, ILogger<ExceptionHandlingMiddleware> logger)
-    {
-        _next = next;
-        _logger = logger;
-    }
+
+   
+    private readonly RequestDelegate _next = next;                       // the next step in the pipeline
+    private readonly ILogger<ExceptionHandlingMiddleware> _logger = logger;
+
 
     public async Task InvokeAsync(HttpContext context)
     {
@@ -26,6 +24,7 @@ public class ExceptionHandlingMiddleware
            
             await WriteProblem(context, StatusCodes.Status409Conflict, "Conflict", ex.Message);
         }
+
         catch(NotFoundException ex)
         {
             await WriteProblem(context, StatusCodes.Status404NotFound, "Not Found", ex.Message);
@@ -34,6 +33,17 @@ public class ExceptionHandlingMiddleware
         {
              await WriteProblem(context, StatusCodes.Status403Forbidden, "Forbidden", ex.Message);
         }
+
+        catch (ArgumentException ex)
+        {
+            await WriteProblem(context, StatusCodes.Status400BadRequest, "Bad Request", ex.Message);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            await WriteProblem(context, StatusCodes.Status400BadRequest, "Not Found", ex.Message);
+        }
+
+
         catch (Exception ex)
         {
             

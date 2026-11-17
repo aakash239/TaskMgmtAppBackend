@@ -1,6 +1,6 @@
 namespace TaskManagement.Application.DTOs;
 
-public record JwtCreationDto
+public record JwtClaimsDto
 (
     int UserId,
     string Name,
