@@ -6,7 +6,7 @@ using TaskManagement.Api.Middleware;
 using TaskManagement.Application;
 using TaskManagement.Application.Interfaces;
 using TaskManagement.Infrastructure;
-
+using System.Text.Json.Serialization;
 var builder = WebApplication.CreateBuilder(args);
 
 
@@ -15,7 +15,13 @@ builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddHttpContextAccessor(); // this lets current user see the current request 
 builder.Services.AddScoped<ICurrentUserService, CurrentUser>();
 builder.Services.AddAuthorization();
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(
+            new JsonStringEnumConverter()
+        );
+    });
 builder.Services.AddOpenApi();
 
 // Check access tokens on protected endpoints.
