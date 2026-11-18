@@ -90,6 +90,15 @@ public class BoardRepository (AppDbContext context) : IBoardRepository
     {
         var board = await _context.Boards
                                 .FirstOrDefaultAsync(b => b.BoardId == boardId && b.UserId == userId, cancellationToken);
+
+        if(board == null)
+            return false;
+
+        board.IsDeleted = true;
+        board.DeletedAt = DateTime.UtcNow;
+        board.UpdatedAt = DateTime.UtcNow;
+
+        await _context.SaveChangesAsync(cancellationToken);
         return true;
     } 
 }

@@ -10,7 +10,7 @@ CREATE TABLE [dbo].[KanbanTemplateColumns](
     [UpdatedAt] DATETIME2 NOT NULL
         CONSTRAINT [DF_KanbanTemplateColumns_UpdatedAt]
             DEFAULT (SYSUTCDATETIME()),
-    
+ 
     CONSTRAINT [PK_KanbanTemplateColumns]
         PRIMARY KEY ([TemplateColumnId]),
 

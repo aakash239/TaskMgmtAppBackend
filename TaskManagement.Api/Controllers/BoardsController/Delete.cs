@@ -9,7 +9,7 @@ public partial class BoardsController
     public async Task<IActionResult> Delete(int boardId, CancellationToken cancellationToken)
     {
         var deleted = await _boardService.DeleteBoardByIdAsync(boardId, UserId, cancellationToken);
-        if(deleted)
+        if(!deleted)
             return NotFound();
         return NoContent();
     }
