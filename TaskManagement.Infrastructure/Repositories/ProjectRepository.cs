@@ -151,12 +151,5 @@ cancellationToken);
 return rows > 0; // 0 rows = nothing was in the trash with that id
 }
 
-public Task<int> PurgeExpiredAsync(DateTime cutoffUtc, CancellationToken cancellationToken = default)
-{
 
-return _context.Projects
-.IgnoreQueryFilters()
-.Where(p => p.IsDeleted && p.DeletedAt != null && p.DeletedAt < cutoffUtc)
-.ExecuteDeleteAsync(cancellationToken); // returns how many projects were removed
-}
 }

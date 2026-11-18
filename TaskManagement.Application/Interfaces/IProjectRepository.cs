@@ -28,8 +28,6 @@ public interface IProjectRepository
     // brings a trashed project back : returns false if there is nothing to restore 
      Task<bool> RestoreAsync(int projectId, CancellationToken cancellationToken = default);
 
-     // to permanently delete projects that were trashed 
-     Task<int> PurgeExpiredAsync(DateTime cutoffUtc, CancellationToken cancellationToken = default);
-
+   
 
 }

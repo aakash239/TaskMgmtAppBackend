@@ -7,7 +7,7 @@ using TaskManagement.Core.Configuration;
 using TaskManagement.Infrastructure.Authentication;
 using TaskManagement.Infrastructure.Data;
 using TaskManagement.Infrastructure.Repositories;
-using TaskManagement.Infrastructure.BackgroundJobs;
+
 using TaskManagement.Infrastructure.Security;
 
 
@@ -30,8 +30,7 @@ public static class DependencyInjection
             .ValidateOnStart();
 
 
-        // binding the "Projects" section so classes can ask for IOptions<ProjectSettings>
-        services.Configure<ProjectSettings>(configuration.GetSection(ProjectSettings.SectionName));
+       
 
         services.AddScoped<IUserRepository, UserRepository>();         // one per request (depends on the scoped DbContext)
         services.AddScoped<IPasswordService, PasswordService>();
@@ -61,7 +60,7 @@ public static class DependencyInjection
   
 
         services.AddDbContext<AppDbContext>(options => options.UseSqlServer(connectionString));
-         services.AddHostedService<TrashPurgeService>();
+        
 
         return services;
     }

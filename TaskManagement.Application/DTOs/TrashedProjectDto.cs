@@ -13,7 +13,7 @@ public class TrashedProjectDto
 
      public DateTime DeletedAt {get; set;}
 
-     public int DaysRemaining {get; set;}
+    
 
 
 }

@@ -12,16 +12,16 @@ public class ProjectService : IProjectService
 {
 private readonly IProjectRepository _projectRepository; // data access abstraction
 private readonly ICurrentUserService _currentUser; // who is calling
-private readonly ProjectSettings _settings; // trash retention days
+
 
 public ProjectService(
 IProjectRepository projectRepository,
-ICurrentUserService currentUser,
-IOptions<ProjectSettings> options)
+ICurrentUserService currentUser
+)
 {
 _projectRepository = projectRepository;
 _currentUser = currentUser;
-_settings = options.Value; // the bound "Projects" section
+
 }
 
 public Task<List<ProjectDto>> GetMyProjectsAsync(CancellationToken cancellationToken = default) =>
@@ -59,16 +59,7 @@ await _projectRepository.SoftDeleteAsync(projectId, _currentUser.UserId, cancell
 public async Task<List<TrashedProjectDto>> GetMyTrashAsync(CancellationToken cancellationToken = default)
 {
 var items = await _projectRepository.GetMyTrashAsync(_currentUser.UserId, cancellationToken);
-var now = DateTime.UtcNow;
 
-foreach (var item in items)
-{
-// The day it will be permanently deleted = trashed date + retention days.
-var expiresAt = item.DeletedAt.AddDays(_settings.TrashRetentionDays);
-
-// to not go below zero 
-item.DaysRemaining = Math.Max(0, (int)Math.Ceiling((expiresAt - now).TotalDays));
-}
 
 return items;
 }
