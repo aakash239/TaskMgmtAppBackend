@@ -3,7 +3,7 @@ CREATE TABLE [dbo].[BoardColumns](
     [BoardId] INT NOT NULL,
     [Name] NVARCHAR(100) NOT NULL,
     [Description] NVARCHAR(500) NULL,
-    [Position] INT NULL,
+    [Position] INT NOT NULL,
 
     [CreatedAt] DATETIME2 NOT NULL
         CONSTRAINT [DF_BoardColumns_CreatedAt]
