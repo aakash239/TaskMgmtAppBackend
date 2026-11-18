@@ -9,6 +9,10 @@ CREATE TABLE [dbo].[KanbanTemplates](
     [UpdatedAt] DATETIME2 NOT NULL
         CONSTRAINT [DF_KanbanTemplates_UpdatedAt]
         DEFAULT (SYSUTCDATETIME()),
+    [IsDeleted] BIT NOT NULL
+        CONSTRAINT [DF_KanbanTemplateColumns_IsDeleted]
+        DEFAULT (0),
+    [DeletedAt] DATETIME2 Null,
     
     CONSTRAINT [PK_KanbanTemplates]
         PRIMARY KEY ([TemplateId]),

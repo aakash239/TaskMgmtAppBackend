@@ -94,7 +94,10 @@ public class BoardRepository (AppDbContext context) : IBoardRepository
         if(board == null)
             return false;
 
-        _context.Boards.Remove(board);
+        board.IsDeleted = true;
+        board.DeletedAt = DateTime.UtcNow;
+        board.UpdatedAt = DateTime.UtcNow;
+
         await _context.SaveChangesAsync(cancellationToken);
         return true;
     } 

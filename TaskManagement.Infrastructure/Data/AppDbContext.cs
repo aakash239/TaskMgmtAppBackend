@@ -154,6 +154,11 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options) : DbCo
 
             entity.HasIndex(t => t.UserId)
                     .HasDatabaseName("IDX_KanbanTemplates_UserId");
+
+            entity.Property(t => t.IsDeleted)
+                    .HasDefaultValue(false);
+
+            entity.Property(t => t.DeletedAt);
         });
     
         modelBuilder.Entity<KanbanTemplateColumn> (entity =>
@@ -195,32 +200,26 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options) : DbCo
             entity.HasKey(b => b.BoardId)
                 .HasName("PK_Boards");
 
-
             entity.Property(b => b.Name)
                 .HasMaxLength(100)
                 .IsRequired();
 
-
             entity.Property(b => b.Description)
                 .HasMaxLength(500);
-
 
             entity.Property(b => b.CreatedAt)
                 .HasDefaultValueSql("SYSUTCDATETIME()",
                     "DF_Boards_CreatedAt");
 
-
             entity.Property(b => b.UpdatedAt)
                 .HasDefaultValueSql("SYSUTCDATETIME()",
                     "DF_Boards_UpdatedAt");
-
 
             entity.HasOne(b => b.User)
                 .WithMany(u => u.Boards)
                 .HasForeignKey(b => b.UserId)
                 .HasConstraintName("FK_Boards_Users")
                 .OnDelete(DeleteBehavior.NoAction);
-
 
             entity.HasOne(b => b.Template)
                 .WithMany(t => t.Boards)
@@ -229,6 +228,11 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options) : DbCo
                 .HasConstraintName("FK_Boards_KanbanTemplates")
                 .OnDelete(DeleteBehavior.NoAction);
 
+            entity.Property(b => b.IsDeleted)
+                    .HasDefaultValue(false);
+                    
+            entity.Property(b => b.DeletedAt)
+                    .IsRequired(false);
 
             entity.HasIndex(b => b.UserId)
                 .HasDatabaseName("IX_Boards_UserId");
@@ -279,5 +283,10 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options) : DbCo
             entity.HasAlternateKey(c => new { c.BoardId, c.Position })
                 .HasName("UQ_BoardColumns_Position");
         });
+    
+        // Global Query Filters
+        // Whenever EF Core queries this entities it automatically applies (Where IsDeleted = 0) to the query
+        modelBuilder.Entity<KanbanTemplate>().HasQueryFilter(t => !t.IsDeleted);
+        modelBuilder.Entity<Board>().HasQueryFilter(b => !b.IsDeleted);
     }    
 }

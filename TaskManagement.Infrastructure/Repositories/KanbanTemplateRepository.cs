@@ -82,14 +82,11 @@ public class KanbanTemplateRepository(AppDbContext context) : IKanbanTemplateRep
 
         if (template == null)
             return false;
+        
+        template.IsDeleted = true;
+        template.DeletedAt = DateTime.UtcNow;
+        template.UpdatedAt = DateTime.UtcNow;
 
-        // template cannot be deleted if a board has reference to it
-        bool hasBoards = await _context.Boards.AnyAsync(b => b.TemplateId == templateId, cancellationToken);
-
-        if(hasBoards)
-            return false;
-
-        _context.KanbanTemplates.Remove(template);
         await _context.SaveChangesAsync(cancellationToken);
         return true;
     } 

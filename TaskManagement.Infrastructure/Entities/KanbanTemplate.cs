@@ -8,6 +8,8 @@ public class KanbanTemplate
     public string? Description {get; set;}
     public DateTime CreatedAt {get; set;}
     public DateTime UpdatedAt {get; set;}
+    public bool IsDeleted {get; set;} = false;
+    public DateTime? DeletedAt {get; set;}
 
     //Navigation Properties
     public User User {get; set;} = null!;

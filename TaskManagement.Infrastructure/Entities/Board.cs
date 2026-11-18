@@ -13,5 +13,7 @@ public class Board
     // Navigation Properties
     public User User {get; set;} = null!;
     public KanbanTemplate Template {get; set;} = null!;
+    public bool IsDeleted {get; set;} = false;
+    public DateTime? DeletedAt {get; set;}
     public ICollection<BoardColumn> Columns = [];
 }

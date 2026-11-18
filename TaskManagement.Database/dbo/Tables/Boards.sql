@@ -11,6 +11,10 @@ CREATE TABLE [dbo].[Boards](
     [UpdatedAt] DATETIME2 NOT NULL
         CONSTRAINT [DF_Boards_UpdatedAt]
             DEFAULT (SYSUTCDATETIME()),
+    [IsDeleted] BIT NOT NULL
+        CONSTRAINT [DF_Boards_IsDeleted]
+        DEFAULT (0),
+    [DeletedAt] DATETIME2 Null,
     
     CONSTRAINT [PK_Boards]
         PRIMARY KEY ([BoardId]),
