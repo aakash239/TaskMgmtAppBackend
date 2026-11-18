@@ -7,7 +7,9 @@ using TaskManagement.Core.Configuration;
 using TaskManagement.Infrastructure.Authentication;
 using TaskManagement.Infrastructure.Data;
 using TaskManagement.Infrastructure.Repositories;
+
 using TaskManagement.Infrastructure.Security;
+
 
 namespace TaskManagement.Infrastructure;
 
@@ -27,6 +29,14 @@ public static class DependencyInjection
                 "JWT issuer, audience, signing key, and 15-minute expiry must be configured.")
             .ValidateOnStart();
 
+
+       
+
+        services.AddScoped<IUserRepository, UserRepository>();         // one per request (depends on the scoped DbContext)
+        services.AddScoped<IPasswordService, PasswordService>();
+        services.AddSingleton<IJwtTokenService, JwtTokenService>();
+        services.AddScoped<IProjectRepository, ProjectRepository>();
+
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IPasswordService, PasswordService>();
         services.AddSingleton<IJwtTokenService, JwtTokenService>();
@@ -35,13 +45,22 @@ public static class DependencyInjection
         services.AddScoped<IKanbanTemplateRepositiory, KanbanTemplateRepository>();
         services.AddScoped<IBoardRepository, BoardRepository>();
 
+
         var connectionString = configuration.GetConnectionString("defaultConnection");
         if (connectionString == null)
         {
             throw new InvalidOperationException("DB Connection string not configured properly");
         }
 
+
+        // Services here
+        // Database
+        // Register EF Core's DbContext (scoped per request by default).
+      
+  
+
         services.AddDbContext<AppDbContext>(options => options.UseSqlServer(connectionString));
+        
 
         return services;
     }
