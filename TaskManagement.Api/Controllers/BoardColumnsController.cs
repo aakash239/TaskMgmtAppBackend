@@ -22,7 +22,7 @@ public class BoardColumnsController(
         int boardId,
         CancellationToken cancellationToken)
     {
-        var columns = await _boardService.GetColumnsAsync(
+        var columns = await _boardService.GetBoardColumnsAsync(
             boardId, UserId, cancellationToken);
 
         return Ok(columns);
@@ -35,7 +35,7 @@ public class BoardColumnsController(
         CreateBoardColumnDto dto,
         CancellationToken cancellationToken)
     {
-        var columnId = await _boardService.AddColumnAsync(
+        var columnId = await _boardService.AddBoardColumnAsync(
             boardId, UserId, dto, cancellationToken);
 
         return CreatedAtAction(
@@ -52,7 +52,7 @@ public class BoardColumnsController(
         UpdateBoardColumnDto dto,
         CancellationToken cancellationToken)
     {
-        var updated = await _boardService.UpdateColumnAsync(
+        var updated = await _boardService.UpdateBoardColumnAsync(
             boardId, columnId, UserId, dto, cancellationToken);
 
         if (!updated)
@@ -68,7 +68,7 @@ public class BoardColumnsController(
         int columnId,
         CancellationToken cancellationToken)
     {
-        var deleted = await _boardService.DeleteColumnAsync(
+        var deleted = await _boardService.DeleteBoardColumnAsync(
             boardId, columnId, UserId, cancellationToken);
 
         if (!deleted)
@@ -81,10 +81,10 @@ public class BoardColumnsController(
     [HttpPatch("reorder")]
     public async Task<IActionResult> ReorderColumns(
         int boardId,
-        ReorderBoardColumnsDto dto,
+        ReorderColumnsDto dto,
         CancellationToken cancellationToken)
     {
-        var reordered = await _boardService.ReorderColumnsAsync(
+        var reordered = await _boardService.ReorderBoardColumnsAsync  (
             boardId, UserId, dto, cancellationToken);
 
         if (!reordered)
