@@ -28,68 +28,68 @@ public class BoardColumnsController(
         return Ok(columns);
     }
 
-    // POST: api/boards/1/columns
-    [HttpPost]
-    public async Task<IActionResult> AddColumn(
-        int boardId,
-        CreateBoardColumnDto dto,
-        CancellationToken cancellationToken)
-    {
-        var columnId = await _boardService.AddBoardColumnAsync(
-            boardId, UserId, dto, cancellationToken);
+    // // POST: api/boards/1/columns
+    // [HttpPost]
+    // public async Task<IActionResult> AddColumn(
+    //     int boardId,
+    //     CreateBoardColumnDto dto,
+    //     CancellationToken cancellationToken)
+    // {
+    //     var columnId = await _boardService.AddBoardColumnAsync(
+    //         boardId, UserId, dto, cancellationToken);
 
-        return CreatedAtAction(
-            nameof(GetColumns),
-            new { boardId },
-            new { columnId });
-    }
+    //     return CreatedAtAction(
+    //         nameof(GetColumns),
+    //         new { boardId },
+    //         new { columnId });
+    // }
 
-    // PUT: api/boards/1/columns/2
-    [HttpPut("{columnId:int}")]
-    public async Task<IActionResult> UpdateColumn(
-        int boardId,
-        int columnId,
-        UpdateBoardColumnDto dto,
-        CancellationToken cancellationToken)
-    {
-        var updated = await _boardService.UpdateBoardColumnAsync(
-            boardId, columnId, UserId, dto, cancellationToken);
+    // // PUT: api/boards/1/columns/2
+    // [HttpPut("{columnId:int}")]
+    // public async Task<IActionResult> UpdateColumn(
+    //     int boardId,
+    //     int columnId,
+    //     UpdateBoardColumnDto dto,
+    //     CancellationToken cancellationToken)
+    // {
+    //     var updated = await _boardService.UpdateBoardColumnAsync(
+    //         boardId, columnId, UserId, dto, cancellationToken);
 
-        if (!updated)
-            return NotFound();
+    //     if (!updated)
+    //         return NotFound();
 
-        return NoContent();
-    }
+    //     return NoContent();
+    // }
 
-    // DELETE: api/boards/1/columns/2
-    [HttpDelete("{columnId:int}")]
-    public async Task<IActionResult> DeleteColumn(
-        int boardId,
-        int columnId,
-        CancellationToken cancellationToken)
-    {
-        var deleted = await _boardService.DeleteBoardColumnAsync(
-            boardId, columnId, UserId, cancellationToken);
+    // // DELETE: api/boards/1/columns/2
+    // [HttpDelete("{columnId:int}")]
+    // public async Task<IActionResult> DeleteColumn(
+    //     int boardId,
+    //     int columnId,
+    //     CancellationToken cancellationToken)
+    // {
+    //     var deleted = await _boardService.DeleteBoardColumnAsync(
+    //         boardId, columnId, UserId, cancellationToken);
 
-        if (!deleted)
-            return NotFound();
+    //     if (!deleted)
+    //         return NotFound();
 
-        return NoContent();
-    }
+    //     return NoContent();
+    // }
 
-    // PATCH: api/boards/1/columns/reorder
-    [HttpPatch("reorder")]
-    public async Task<IActionResult> ReorderColumns(
-        int boardId,
-        ReorderColumnsDto dto,
-        CancellationToken cancellationToken)
-    {
-        var reordered = await _boardService.ReorderBoardColumnsAsync  (
-            boardId, UserId, dto, cancellationToken);
+    // // PATCH: api/boards/1/columns/reorder
+    // [HttpPatch("reorder")]
+    // public async Task<IActionResult> ReorderColumns(
+    //     int boardId,
+    //     ReorderColumnsDto dto,
+    //     CancellationToken cancellationToken)
+    // {
+    //     var reordered = await _boardService.ReorderBoardColumnsAsync  (
+    //         boardId, UserId, dto, cancellationToken);
 
-        if (!reordered)
-            return NotFound();
+    //     if (!reordered)
+    //         return NotFound();
 
-        return NoContent();
-    }
+    //     return NoContent();
+    // }
 }

@@ -293,8 +293,6 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options) : DbCo
 
             entity.HasIndex(b => b.TemplateId)
                 .HasDatabaseName("IX_Boards_TemplateId");
-
-
         });
     
         modelBuilder.Entity<BoardColumn>(entity =>

@@ -6,7 +6,7 @@ public interface IBoardRepository
 {
     Task<IEnumerable<BoardDto>> GetAllByUserIdAsync(int userId, CancellationToken cancellationToken = default);
     Task<BoardDto?> GetByIdAsync(int boardId, int userId, CancellationToken cancellationToken = default);
-    Task<int> GetOrCreateMyBoardAsync(int projectId, int userId, CancellationToken cancellationToken = default);
+    Task<BoardDto> GetOrCreateMyBoardAsync(int projectId, int userId, CancellationToken cancellationToken = default);
     Task<bool> DeleteBoardByIdAsync(int boardId, int userId, CancellationToken cancellationToken = default); 
 
     // Column Methods

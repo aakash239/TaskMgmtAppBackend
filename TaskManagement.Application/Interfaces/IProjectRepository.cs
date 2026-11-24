@@ -14,7 +14,7 @@ public interface IProjectRepository
     Task<ProjectDto?> GetByIdAsync(int projectId, int userId, CancellationToken cancellationToken = default);
     
     //creates the project and makes the user it's Admin 
-    Task<ProjectDto> CreateAsync(int userId, ProjectRequestDto request, CancellationToken cancellationToken = default);
+    Task<ProjectDto> CreateProjectAsync(int userId, ProjectRequestDto request, CancellationToken cancellationToken = default);
 
     // To update name, description, status and due date - service first checks permission 
     Task UpdateAsync(int projectId, ProjectRequestDto request, CancellationToken cancellationToken = default);

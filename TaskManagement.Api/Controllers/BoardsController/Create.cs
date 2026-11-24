@@ -7,9 +7,9 @@ public partial class BoardsController
 {
     // POST: api/boards
     [HttpPost]
-    public async Task<IActionResult> Create(CreateBoardDto dto, CancellationToken cancellationToken)
+    public async Task<IActionResult> Create(int ProjectId, CancellationToken cancellationToken)
     {
-        var boardId = await _boardService.CreateBoardAsync(UserId, dto, cancellationToken);
+        var boardId = await _boardService.GetOrCreateMyBoardAsync(ProjectId, UserId, cancellationToken);
         return CreatedAtAction(nameof(GetById), new {boardId}, new {boardId});
     }
 }

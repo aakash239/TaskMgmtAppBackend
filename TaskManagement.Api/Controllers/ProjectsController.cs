@@ -8,14 +8,12 @@ namespace TaskManagement.Api.Controllers;
 [ApiController] 
 [Authorize] 
 [Route("api/[controller]")] 
-public class ProjectsController : ControllerBase
+public class ProjectsController(IProjectService projectService) : ControllerBase
 {
-private readonly IProjectService _projectService;
+private readonly IProjectService _projectService = projectService;
 
-public ProjectsController(IProjectService projectService) => _projectService = projectService;
-
-// GET /api/projects : my active projects, each with my role in it
-[HttpGet]
+    // GET /api/projects : my active projects, each with my role in it
+    [HttpGet]
 public async Task<ActionResult<List<ProjectDto>>> GetMine(CancellationToken cancellationToken)
 => Ok(await _projectService.GetMyProjectsAsync(cancellationToken));
 
@@ -34,7 +32,7 @@ public async Task<ActionResult<ProjectDto>> GetById(int id, CancellationToken ca
 [HttpPost]
 public async Task<ActionResult<ProjectDto>> Create([FromBody] ProjectRequestDto request, CancellationToken cancellationToken)
 {
-var project = await _projectService.CreateAsync(request, cancellationToken);
+var project = await _projectService.CreateProjectAsync(request, cancellationToken);
 
 
 return CreatedAtAction(nameof(GetById), new { id = project.ProjectId }, project);
