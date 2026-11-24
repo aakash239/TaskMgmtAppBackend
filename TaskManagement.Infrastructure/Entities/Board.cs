@@ -13,15 +13,11 @@ public class Board
     public KanbanTemplate Template {get; set;} = null!;
     public bool IsDeleted {get; set;} = false;
     public DateTime? DeletedAt {get; set;}
-<<<<<<< HEAD
-    public ICollection<BoardColumn> Columns = [];
 
     public ICollection<ProjectTask> Tasks { get; set; } = [];
-=======
 
     // Navigation Properties
     public User User {get; set;} = null!;
     public Project Project {get; set;} = null!;
     public ICollection<BoardColumn> Columns {get; set;} = [];
->>>>>>> 036396503756b4c1607a1fd1b05b2baaab2e7cec
 }

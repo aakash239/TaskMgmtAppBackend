@@ -170,10 +170,6 @@ public class BoardRepository (AppDbContext context) : IBoardRepository
         await _context.SaveChangesAsync(cancellationToken);
         return true;
     } 
-<<<<<<< HEAD
-}
-=======
-
     // Column Methods
     public async Task<IEnumerable<BoardColumnDto>> GetBoardColumnsAsync(int boardId, int userId, CancellationToken cancellationToken = default)
     {
@@ -313,4 +309,4 @@ public class BoardRepository (AppDbContext context) : IBoardRepository
     //     return true;
     // }
 }
->>>>>>> 036396503756b4c1607a1fd1b05b2baaab2e7cec
+
