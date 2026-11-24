@@ -16,6 +16,7 @@ private readonly AppDbContext _context = context;
     {
         ProjectId = m.Project.ProjectId,
         Name = m.Project.Name,
+        TemplateId = m.Project.TemplateId,
         Description = m.Project.Description,
         Status = m.Project.Status,
         DueDate = m.Project.DueDate,
