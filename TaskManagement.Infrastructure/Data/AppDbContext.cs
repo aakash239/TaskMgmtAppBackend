@@ -283,6 +283,7 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options) : DbCo
             // One board per user per project
             entity.HasIndex(b => new {b.ProjectId, b.UserId})
                 .IsUnique()
+                .HasFilter("[IsDeleted] = 0")
                 .HasDatabaseName("UQ_Boards_ProjectId_UserId");
 
             entity.HasIndex(b => b.UserId)

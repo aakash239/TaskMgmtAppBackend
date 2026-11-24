@@ -57,11 +57,10 @@ private readonly AppDbContext _context = context;
 
     public async Task<ProjectDto> CreateProjectAsync(int userId, ProjectRequestDto request, CancellationToken cancellationToken = default)
     {
-        var templateSupplied = _context.KanbanTemplates.FirstOrDefaultAsync(
+        var templateSupplied = await _context.KanbanTemplates.FirstOrDefaultAsync(
                 t => t.TemplateId == request.TemplateId && 
-                t.IsDeleted == false && 
                 t.UserId == userId) 
-                ?? throw new ArgumentException("Template Id Supplied is not there");
+                ?? throw new NotFoundException("Template Id Supplied is not there");
         
         var project = new Project
         {
@@ -150,5 +149,26 @@ private readonly AppDbContext _context = context;
             cancellationToken);
 
         return rows > 0; // 0 rows = nothing was in the trash with that id
+    }
+
+    public async Task UpdateTemplateAsync(int projectId, int templateId, int userId, CancellationToken cancellationToken = default)
+    {
+        var project = await _context.Projects.FirstOrDefaultAsync(p => p.ProjectId == projectId, cancellationToken) ?? throw new NotFoundException("Project not Found.");
+
+        // Verify that the template exists and belongs to the user.
+        var templateExists = await _context.KanbanTemplates.AnyAsync(t => t.TemplateId == templateId && t.UserId == userId, cancellationToken);
+        
+        if(templateExists)
+            throw new NotFoundException("Template not found");
+
+        // If assigned already then no db update needed
+
+        if(project.TemplateId == templateId)
+            return;
+        
+        project.TemplateId = templateId;
+        project.UpdatedAt = DateTime.UtcNow;
+
+        await _context.SaveChangesAsync(cancellationToken);
     }
 }

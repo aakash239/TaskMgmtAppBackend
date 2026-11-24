@@ -18,5 +18,5 @@ public interface IProjectService
 
     Task<ProjectDto> RestoreAsync(int projectId, CancellationToken cancellationToken = default);
 
-
+    Task<ProjectDto> UpdateTemplateAsync(int projectId, UpdateProjectTemplateDto request, CancellationToken cancellationToken = default);
 }

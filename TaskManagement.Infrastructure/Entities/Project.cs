@@ -1,4 +1,3 @@
-using Microsoft.EntityFrameworkCore.Query;
 using TaskManagement.Core.Enums;
 namespace TaskManagement.Infrastructure.Entities;
 

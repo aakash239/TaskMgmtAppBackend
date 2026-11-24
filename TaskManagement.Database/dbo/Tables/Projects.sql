@@ -14,6 +14,6 @@ CREATE TABLE [dbo].[Projects] (
    CONSTRAINT [PK_Projects] PRIMARY KEY ([ProjectId]),
    CONSTRAINT [FK_Projects_CreatedBy] FOREIGN KEY ([CreatedByUserId]) REFERENCES [dbo].[Users] ([UserId]),
    CONSTRAINT [FK_Projects_DeletedBy] FOREIGN KEY ([DeletedByUserId]) REFERENCES [dbo].[Users] ([UserId]),
-   CONSTRAINT [FK_Projects_KanbanTemplates] FOREIGN KEY ([TemplateId]) REFERENCES [dbo].[Users] ([UserId]),
+   CONSTRAINT [FK_Projects_KanbanTemplates] FOREIGN KEY ([TemplateId]) REFERENCES [dbo].[KanbanTemplates] ([TemplateId]),
    CONSTRAINT [CK_Projects_Status] CHECK ([Status] IN (0, 1, 2))
 );

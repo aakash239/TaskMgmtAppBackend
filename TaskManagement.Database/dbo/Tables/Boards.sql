@@ -31,9 +31,6 @@ CREATE TABLE [dbo].[Boards](
     CONSTRAINT [FK_Boards_KanbanTemplates]
         FOREIGN KEY([TemplateId])
             REFERENCES [dbo].[KanbanTemplates]([TemplateId]),
-
-    CONSTRAINT [UQ_Boards_ProjectId_UserId]
-        UNIQUE([ProjectId], [UserId])
 );
 
 GO
@@ -52,3 +49,7 @@ CREATE INDEX [IDX_Board_UserId]
     ON [dbo].[Boards]([UserId]);
 
 GO
+
+CREATE UNIQUE INDEX [UQ_Boards_ProjectId_UserId]
+    ON [dbo].[Boards]([ProjectId], [UserId])
+    WHERE [IsDeleted] = 0;

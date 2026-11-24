@@ -26,8 +26,7 @@ public interface IProjectRepository
     Task<List<TrashedProjectDto>> GetMyTrashAsync (int userId, CancellationToken cancellationToken = default);
     
     // brings a trashed project back : returns false if there is nothing to restore 
-     Task<bool> RestoreAsync(int projectId, CancellationToken cancellationToken = default);
-
-   
-
+    Task<bool> RestoreAsync(int projectId, CancellationToken cancellationToken = default);
+     
+    Task UpdateTemplateAsync(int projectId, int templateId, int userId, CancellationToken cancellationToken = default);
 }

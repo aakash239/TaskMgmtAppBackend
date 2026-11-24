@@ -17,5 +17,5 @@ public class Board
     // Navigation Properties
     public User User {get; set;} = null!;
     public Project Project {get; set;} = null!;
-    public ICollection<BoardColumn> Columns = [];
+    public ICollection<BoardColumn> Columns {get; set;} = [];
 }

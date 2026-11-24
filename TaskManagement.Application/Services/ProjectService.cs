@@ -1,7 +1,5 @@
-using Microsoft.Extensions.Options;
 using TaskManagement.Application.Interfaces;
 using TaskManagement.Application.DTOs;
-using TaskManagement.Core.Configuration;
 using TaskManagement.Core.Enums;
 using TaskManagement.Core.Exceptions;
 
@@ -84,5 +82,12 @@ public class ProjectService(IProjectRepository projectRepository, ICurrentUserSe
     {
         request.Name = request.Name.Trim();
         request.Description = string.IsNullOrWhiteSpace(request.Description) ? null : request.Description.Trim();
+    }
+
+    public async Task<ProjectDto> UpdateTemplateAsync(int projectId, UpdateProjectTemplateDto request, CancellationToken cancellationToken = default)
+    {
+        await RequireAdminAsync(projectId, includeDeleted: false, cancellationToken);
+        await _projectRepository.UpdateTemplateAsync(projectId, request.TemplateId, _currentUser.UserId, cancellationToken);
+        return await GetByIdAsync(projectId, cancellationToken);
     }
 }
