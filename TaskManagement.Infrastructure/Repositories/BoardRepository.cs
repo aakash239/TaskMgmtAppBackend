@@ -9,6 +9,119 @@ namespace TaskManagement.Infrastructure.Repositories;
 public class BoardRepository (AppDbContext context) : IBoardRepository
 {
     private readonly AppDbContext _context = context;
+
+
+public async Task<BoardDto> GetOrCreateMyBoardAsync(
+    int projectId,
+    int userId,
+    CancellationToken cancellationToken = default)
+{
+    // 1. Verify that the user belongs to this project.
+    var isMember = await _context.ProjectMembers
+        .AnyAsync(
+            pm => pm.ProjectId == projectId && pm.UserId == userId,
+            cancellationToken);
+
+    if (!isMember)
+        throw new KeyNotFoundException("Project not found or user is not a member.");
+
+    // 2. Check whether the user already has a board.
+    var existingBoard = await _context.Boards
+        .AsNoTracking()
+        .Where(b =>
+            b.ProjectId == projectId &&
+            b.UserId == userId &&
+            !b.IsDeleted)
+        .Select(b => new BoardDto(
+            b.BoardId,
+            b.TemplateId,
+            b.Name,
+            b.Description,
+            b.CreatedAt,
+            b.UpdatedAt,
+            b.Columns
+                .OrderBy(c => c.Position)
+                .Select(c => new BoardColumnDto(
+                    c.BoardColumnId,
+                    c.Name,
+                    c.Description,
+                    c.Position
+                )).ToList()
+        ))
+        .FirstOrDefaultAsync(cancellationToken);
+
+    if (existingBoard != null)
+        return existingBoard;
+
+    // 3. Get the project's currently assigned template.
+    var project = await _context.Projects
+        .AsNoTracking()
+        .Where(p => p.ProjectId == projectId)
+        .Select(p => new { p.TemplateId })
+        .FirstOrDefaultAsync(cancellationToken);
+
+    if (project == null)
+        throw new KeyNotFoundException("Project not found.");
+
+    // 4. Load the template and its columns.
+    var template = await _context.KanbanTemplates
+        .AsNoTracking()
+        .Include(t => t.Columns)
+        .FirstOrDefaultAsync(
+            t => t.TemplateId == project.TemplateId && !t.IsDeleted,
+            cancellationToken);
+
+    if (template == null)
+        throw new KeyNotFoundException("Project template not found.");
+
+    // 5. Create the board using the project's template.
+    var now = DateTime.UtcNow;
+
+    var board = new Board
+    {
+        ProjectId = projectId,
+        UserId = userId,
+        TemplateId = template.TemplateId,
+        Name = "My Board",
+        Description = null,
+        CreatedAt = now,
+        UpdatedAt = now,
+        Columns = template.Columns
+            .OrderBy(c => c.Position)
+            .Select(c => new BoardColumn
+            {
+                Name = c.Name,
+                Description = c.Description,
+                Position = c.Position,
+                CreatedAt = now,
+                UpdatedAt = now
+            })
+            .ToList()
+    };
+
+    _context.Boards.Add(board);
+    await _context.SaveChangesAsync(cancellationToken);
+
+    // 6. Return the newly created board.
+    return new BoardDto(
+        board.BoardId,
+        board.TemplateId,
+        board.Name,
+        board.Description,
+        board.CreatedAt,
+        board.UpdatedAt,
+        board.Columns
+            .OrderBy(c => c.Position)
+            .Select(c => new BoardColumnDto(
+                c.BoardColumnId,
+                c.Name,
+                c.Description,
+                c.Position
+            ))
+            .ToList()
+    );
+}
+
     public async Task<IEnumerable<BoardDto>> GetAllByUserIdAsync(int userId, CancellationToken cancellationToken = default)
     {
         return await _context.Boards
