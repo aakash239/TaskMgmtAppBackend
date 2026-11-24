@@ -17,7 +17,7 @@ public class BoardService(IBoardRepository boardRepository) : IBoardService
     public Task<int> CreateBoardAsync(int userId, CreateBoardDto dto, CancellationToken cancellationToken = default)
     {
         ValidateBoard(dto);
-        return _boardRepository.CreateBoardAsync(userId, dto, cancellationToken);
+        return _boardRepository.GetOrCreateMyBoardAsync(userId, dto, cancellationToken);
     }
     public Task<bool> DeleteBoardByIdAsync(int boardId, int userId, CancellationToken cancellationToken = default)
     {

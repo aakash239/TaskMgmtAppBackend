@@ -53,7 +53,7 @@ public class BoardRepository (AppDbContext context) : IBoardRepository
                                     )).ToList()
                             )).FirstOrDefaultAsync(cancellationToken);
     }
-    public async Task<int> CreateBoardAsync(int userId, CreateBoardDto dto, CancellationToken cancellationToken = default)
+    public async Task<int> GetOrCreateMyBoardAsync(int userId, CreateBoardDto dto, CancellationToken cancellationToken = default)
     {
         var template = await _context.KanbanTemplates
                                     .AsNoTracking()
