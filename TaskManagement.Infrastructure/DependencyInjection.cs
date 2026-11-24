@@ -44,6 +44,7 @@ public static class DependencyInjection
         services.AddSingleton<IRefreshTokenGenerator, RefreshTokenGenerator>();
         services.AddScoped<IKanbanTemplateRepositiory, KanbanTemplateRepository>();
         services.AddScoped<IBoardRepository, BoardRepository>();
+        services.AddScoped<ITaskRepository, TaskRepository>();
 
 
         var connectionString = configuration.GetConnectionString("defaultConnection");

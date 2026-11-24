@@ -16,4 +16,6 @@ public class Board
     public bool IsDeleted {get; set;} = false;
     public DateTime? DeletedAt {get; set;}
     public ICollection<BoardColumn> Columns = [];
+
+    public ICollection<ProjectTask> Tasks { get; set; } = [];
 }

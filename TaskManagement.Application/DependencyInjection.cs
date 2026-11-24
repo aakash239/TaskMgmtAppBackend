@@ -16,6 +16,7 @@ public static class DependencyInjection
 
         services.AddScoped<IKanbanTemplateService, KanbanTemplateService>();
         services.AddScoped<IBoardService, BoardService>();
+        services.AddScoped<ITaskService, TaskService>();
 
         return services;
     }
