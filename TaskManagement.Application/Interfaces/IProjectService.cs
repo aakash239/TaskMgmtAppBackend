@@ -9,7 +9,7 @@ public interface IProjectService
     Task<List<ProjectDto>> GetMyProjectsAsync(CancellationToken cancellationToken = default);
     Task<ProjectDto> GetByIdAsync(int projectId, CancellationToken cancellationToken = default);
 
-    Task<ProjectDto> CreateAsync(ProjectRequestDto request, CancellationToken cancellationToken = default);
+    Task<ProjectDto> CreateProjectAsync(ProjectRequestDto request, CancellationToken cancellationToken = default);
 
     Task<ProjectDto> UpdateAsync(int projectId,  ProjectRequestDto request, CancellationToken cancellationToken = default);
     Task DeleteAsync(int projectId, CancellationToken cancellationToken = default);
@@ -18,5 +18,5 @@ public interface IProjectService
 
     Task<ProjectDto> RestoreAsync(int projectId, CancellationToken cancellationToken = default);
 
-
+    Task<ProjectDto> UpdateTemplateAsync(int projectId, UpdateProjectTemplateDto request, CancellationToken cancellationToken = default);
 }

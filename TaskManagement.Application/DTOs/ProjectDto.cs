@@ -6,6 +6,7 @@ public class ProjectDto
     public int ProjectId {get; set;}
     public string Name {get; set;} = string.Empty;
     public string? Description {get; set;}
+    public int TemplateId {get; set;}
     public ProjectStatus Status {get; set;}
 
     public DateOnly? DueDate {get; set;}

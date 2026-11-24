@@ -14,7 +14,7 @@ public interface IProjectRepository
     Task<ProjectDto?> GetByIdAsync(int projectId, int userId, CancellationToken cancellationToken = default);
     
     //creates the project and makes the user it's Admin 
-    Task<ProjectDto> CreateAsync(int userId, ProjectRequestDto request, CancellationToken cancellationToken = default);
+    Task<ProjectDto> CreateProjectAsync(int userId, ProjectRequestDto request, CancellationToken cancellationToken = default);
 
     // To update name, description, status and due date - service first checks permission 
     Task UpdateAsync(int projectId, ProjectRequestDto request, CancellationToken cancellationToken = default);
@@ -26,8 +26,7 @@ public interface IProjectRepository
     Task<List<TrashedProjectDto>> GetMyTrashAsync (int userId, CancellationToken cancellationToken = default);
     
     // brings a trashed project back : returns false if there is nothing to restore 
-     Task<bool> RestoreAsync(int projectId, CancellationToken cancellationToken = default);
-
-   
-
+    Task<bool> RestoreAsync(int projectId, CancellationToken cancellationToken = default);
+     
+    Task UpdateTemplateAsync(int projectId, int templateId, int userId, CancellationToken cancellationToken = default);
 }

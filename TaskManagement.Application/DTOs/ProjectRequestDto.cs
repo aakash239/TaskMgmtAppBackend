@@ -11,6 +11,10 @@ public class ProjectRequestDto
 
    [StringLength(2000, ErrorMessage = "Description can be at most 2000 characters.")]
    public string? Description {get; set;}
+   
+   [Required]
+   [Range(1, int.MaxValue)]
+   public int TemplateId {get; set;}
 
    [EnumDataType(typeof(ProjectStatus), ErrorMessage = "Status must be Active, InProgress or Completed.")]   
    public ProjectStatus Status {get; set;} = ProjectStatus.Active;

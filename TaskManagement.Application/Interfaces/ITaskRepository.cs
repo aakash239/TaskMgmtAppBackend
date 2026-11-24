@@ -16,7 +16,7 @@ public interface ITaskRepository
     Task<TaskDto?> GetByIdAsync(
         int taskId,
         int projectId,
-        int userId,
+        int? userId,
         CancellationToken cancellationToken = default);
 
     Task<TaskDto> CreateAsync(

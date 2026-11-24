@@ -77,7 +77,7 @@ public class KanbanTemplateRepository(AppDbContext context) : IKanbanTemplateRep
     public async Task<bool> DeleteKanbanTemplateByIdAsync(int templateId, int userId, CancellationToken cancellationToken = default)
     {
         var template = await _context.KanbanTemplates.FirstOrDefaultAsync(
-            t => t.TemplateId == templateId && t.UserId == userId, cancellationToken
+            t => t.TemplateId == templateId && t.UserId == userId && !t.Projects.Any(), cancellationToken
         );
 
         if (template == null)

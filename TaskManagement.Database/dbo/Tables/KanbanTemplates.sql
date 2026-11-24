@@ -17,9 +17,6 @@ CREATE TABLE [dbo].[KanbanTemplates](
     CONSTRAINT [PK_KanbanTemplates]
         PRIMARY KEY ([TemplateId]),
 
-    CONSTRAINT [UQ_KanbanTemplates_TemplateId_UserId]
-        UNIQUE ([TemplateId], [UserId]),
-
     CONSTRAINT [FK_KanbanTemplate_Users]
         FOREIGN KEY ([UserId])
             REFERENCES [dbo].[Users]([UserId])

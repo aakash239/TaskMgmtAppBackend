@@ -7,7 +7,7 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options) : DbCo
 {
 
     public DbSet<Project> Projects => Set<Project>(); 
-   public DbSet<ProjectMember> ProjectMembers => Set<ProjectMember>(); 
+    public DbSet<ProjectMember> ProjectMembers => Set<ProjectMember>(); 
 
 
     // User
@@ -48,7 +48,6 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options) : DbCo
                 .HasDefaultValueSql("SYSUTCDATETIME()", "DF_Users_CreatedAt");
         });  
 
-
         modelBuilder.Entity<Project>(entity =>
        {
            entity.ToTable("Projects", "dbo"); 
@@ -62,13 +61,14 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options) : DbCo
            entity.Property(p => p.CreatedAt).HasColumnType("datetime2");
            entity.Property(p => p.UpdatedAt).HasColumnType("datetime2");
            entity.Property(p => p.DeletedAt).HasColumnType("datetime2");
+           entity.HasOne(p => p.Template).WithMany(t => t.Projects).HasForeignKey(p => p.TemplateId).HasConstraintName("FK_Projects_KanbanTemplates").OnDelete(DeleteBehavior.NoAction);
 
           //  every normal query automatically skips trashed projects.
         
           entity.HasQueryFilter(p => !p.IsDeleted);
      });
     
-     modelBuilder.Entity<ProjectMember>(entity =>
+        modelBuilder.Entity<ProjectMember>(entity =>
     {
        entity.ToTable("ProjectMembers", "dbo");
        entity.HasKey(m => new { m.ProjectId, m.UserId }); // composite PK_ProjectMembers
@@ -85,8 +85,7 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options) : DbCo
        entity.HasQueryFilter(m => !m.Project.IsDeleted);
       });
 
-    
-     modelBuilder.Entity<UserSession>(entity =>
+        modelBuilder.Entity<UserSession>(entity =>
         {
             // Table mapping
             entity.ToTable("UserSessions", "dbo", table =>
@@ -177,9 +176,6 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options) : DbCo
             entity.HasKey(t => t.TemplateId)
                   .HasName("PK_KanbanTemplates");
 
-            entity.HasAlternateKey(t => new {t.TemplateId, t.UserId})
-                   .HasName("UQ_KanbanTemplates_TemplateId_UserId");
-
             //Name
             entity.Property(t => t.Name)
                     .HasMaxLength(100)
@@ -242,7 +238,6 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options) : DbCo
         {
             entity.ToTable("Boards", "dbo");
 
-
             entity.HasKey(b => b.BoardId)
                 .HasName("PK_Boards");
 
@@ -267,25 +262,40 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options) : DbCo
                 .HasConstraintName("FK_Boards_Users")
                 .OnDelete(DeleteBehavior.NoAction);
 
-            entity.HasOne(b => b.Template)
-                .WithMany(t => t.Boards)
-                .HasForeignKey(b => new { b.TemplateId, b.UserId })
-                .HasPrincipalKey(t => new { t.TemplateId, t.UserId })
-                .HasConstraintName("FK_Boards_KanbanTemplates")
+            // Board belonging to a project
+            entity.HasOne(b => b.Project)
+                .WithMany(p => p.Boards)
+                .HasForeignKey(b => b.ProjectId)
+                .HasConstraintName("FK_Boards_Projects")
                 .OnDelete(DeleteBehavior.NoAction);
 
+            //Board references it's original template
+            entity.HasOne(b => b.Template)
+                .WithMany(t => t.Boards)
+                .HasForeignKey(b => b.TemplateId)
+                .HasConstraintName("FK_Boards_KanbanTemplates")
+                .OnDelete(DeleteBehavior.NoAction);
+            
             entity.Property(b => b.IsDeleted)
                     .HasDefaultValue(false);
                     
             entity.Property(b => b.DeletedAt)
                     .IsRequired(false);
 
+            // One board per user per project
+            entity.HasIndex(b => new {b.ProjectId, b.UserId})
+                .IsUnique()
+                .HasFilter("[IsDeleted] = 0")
+                .HasDatabaseName("UQ_Boards_ProjectId_UserId");
+
             entity.HasIndex(b => b.UserId)
                 .HasDatabaseName("IX_Boards_UserId");
 
+            entity.HasIndex(b => b.ProjectId)
+                .HasDatabaseName("IX_Boards_ProjectId");
 
-            entity.HasIndex(b => new { b.TemplateId, b.UserId })
-                .HasDatabaseName("IX_Boards_TemplateId_UserId");
+            entity.HasIndex(b => b.TemplateId)
+                .HasDatabaseName("IX_Boards_TemplateId");
         });
     
         modelBuilder.Entity<BoardColumn>(entity =>

@@ -2,6 +2,7 @@ CREATE TABLE [dbo].[Boards](
     [BoardId] INT IDENTITY(1,1) NOT NULL,
     [UserId] INT NOT NULL,
     [TemplateId] INT NOT NULL,
+    [ProjectId] INT NOT NULL,
     [Name] NVARCHAR(100) NOT NULL,
     [Description] NVARCHAR(500) NULL,
 
@@ -23,10 +24,24 @@ CREATE TABLE [dbo].[Boards](
         FOREIGN KEY ([UserId])
             REFERENCES [dbo].[Users]([UserId]),
 
+    CONSTRAINT [FK_Boards_Projects]
+        FOREIGN KEY([ProjectId])
+            REFERENCES [dbo].[Projects](ProjectId),
+
     CONSTRAINT [FK_Boards_KanbanTemplates]
-        FOREIGN KEY ([TemplateId], [UserId])
-            REFERENCES [dbo].[KanbanTemplates]([TemplateId], [UserId]),
+        FOREIGN KEY([TemplateId])
+            REFERENCES [dbo].[KanbanTemplates]([TemplateId]),
 );
+
+GO
+
+CREATE INDEX [IDX_Board_ProjectId]
+    ON [dbo].[Boards]([ProjectId]);
+
+GO
+
+CREATE INDEX [IDX_Boards_TemplateId]
+    ON [dbo].[Boards]([TemplateId]);
 
 GO
 
@@ -35,7 +50,6 @@ CREATE INDEX [IDX_Board_UserId]
 
 GO
 
-CREATE INDEX [IDX_Boards_TemplateId_UserId]
-    ON [dbo].[Boards]([TemplateId], [UserId]);
-
-GO
+CREATE UNIQUE INDEX [UQ_Boards_ProjectId_UserId]
+    ON [dbo].[Boards]([ProjectId], [UserId])
+    WHERE [IsDeleted] = 0;

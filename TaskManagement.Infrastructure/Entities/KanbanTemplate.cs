@@ -15,5 +15,6 @@ public class KanbanTemplate
     public User User {get; set;} = null!;
     public ICollection<KanbanTemplateColumn> Columns {get; set;} = [];
     public ICollection<Board> Boards {get; set;} = [];
+    public ICollection<Project> Projects {get; set;} = [];
     
 }
