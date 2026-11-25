@@ -12,4 +12,6 @@ public class BoardColumn
     
     //Navigation Properties
     public Board Board {get; set;} = null!;
+
+    public ICollection<ProjectTask> Tasks { get; set; } = [];
 }

@@ -25,6 +25,8 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options) : DbCo
     public DbSet<Board> Boards => Set<Board>();
     public DbSet<BoardColumn> BoardColumns => Set<BoardColumn>();
 
+    public DbSet<ProjectTask> Tasks => Set<ProjectTask>();
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -337,6 +339,78 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options) : DbCo
             entity.HasAlternateKey(c => new { c.BoardId, c.Position })
                 .HasName("UQ_BoardColumns_Position");
         });
+
+
+        modelBuilder.Entity<ProjectTask>(entity =>
+        {
+           // Primary key
+           entity.HasKey(t => t.TaskId)
+           .HasName("PK_Tasks");
+
+          // Task title
+          entity.Property(t => t.Title)
+          .HasMaxLength(200)
+          .IsRequired();
+
+         // Optional description
+         entity.Property(t => t.Description)
+         .HasMaxLength(2000);
+
+         // Store TaskPriority enum as SQL TINYINT
+        entity.Property(t => t.Priority)
+        .HasConversion<byte>()
+        .HasDefaultValue(TaskPriority.Medium);
+
+        // Optional due date
+        entity.Property(t => t.DueDate)
+        .HasColumnType("date");
+
+        // Creation timestamp
+        entity.Property(t => t.CreatedAt)
+        .HasColumnType("datetime2")
+        .HasDefaultValueSql("SYSUTCDATETIME()");
+
+        // Last updated timestamp
+        entity.Property(t => t.UpdatedAt)
+        .HasColumnType("datetime2");
+
+        // Soft-delete flag
+        entity.Property(t => t.IsDeleted)
+        .HasDefaultValue(false);
+
+        // Soft-delete timestamp
+        entity.Property(t => t.DeletedAt)
+        .HasColumnType("datetime2");
+
+        // Task -> Board relationship
+        entity.HasOne(t => t.Board)
+        .WithMany(b => b.Tasks)
+        .HasForeignKey(t => t.BoardId)
+        .OnDelete(DeleteBehavior.Cascade)
+        .HasConstraintName("FK_Tasks_Boards");
+
+        // Task -> BoardColumn relationship
+        entity.HasOne(t => t.BoardColumn)
+        .WithMany(c => c.Tasks)
+        .HasForeignKey(t => t.BoardColumnId)
+        .OnDelete(DeleteBehavior.Restrict)
+        .HasConstraintName("FK_Tasks_BoardColumns");
+
+        // Index on BoardId
+        entity.HasIndex(t => t.BoardId)
+        .HasDatabaseName("IX_Tasks_BoardId");
+
+        // Priority validation
+        entity.ToTable(t =>
+        t.HasCheckConstraint(
+            "CK_Tasks_Priority",
+            "[Priority] IN (0, 1, 2)"
+        ));
+
+       // Exclude soft-deleted tasks from normal queries
+       entity.HasQueryFilter(t => !t.IsDeleted);
+});
+
     
         // Global Query Filters
         // Whenever EF Core queries this entities it automatically applies (Where IsDeleted = 0) to the query

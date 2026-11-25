@@ -28,6 +28,8 @@ public class BoardService(IBoardRepository boardRepository) : IBoardService
     {
         return _boardRepository.GetBoardColumnsAsync(boardId, userId, cancellationToken);
     }
+
+
     
     // public Task<int> AddBoardColumnAsync(int boardId, int userId, CreateBoardColumnDto dto, CancellationToken cancellationToken = default)
     // {
@@ -65,3 +67,4 @@ public class BoardService(IBoardRepository boardRepository) : IBoardService
     //     if(dto.TemplateId <= 0) throw new ArgumentException("A valid template is required");
     // }
 }
+

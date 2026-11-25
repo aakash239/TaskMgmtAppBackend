@@ -14,6 +14,8 @@ public class Board
     public bool IsDeleted {get; set;} = false;
     public DateTime? DeletedAt {get; set;}
 
+    public ICollection<ProjectTask> Tasks { get; set; } = [];
+
     // Navigation Properties
     public User User {get; set;} = null!;
     public Project Project {get; set;} = null!;
