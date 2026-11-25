@@ -13,7 +13,7 @@ public record ProjectRequestDto
    public string? Description {get; set;}
    
    [Required]
-   [Range(1, int.MaxValue)]
+   [Range(1, int.MaxValue, ErrorMessage = "A valid kanban template must be selected")]
    public int TemplateId {get; set;}
 
    [EnumDataType(typeof(ProjectStatus), ErrorMessage = "Status must be Active, InProgress or Completed.")]   
