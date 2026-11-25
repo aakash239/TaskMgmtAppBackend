@@ -1,9 +1,8 @@
 using System.ComponentModel.DataAnnotations;
-using TaskManagement.Core.Enums;
 
 namespace TaskManagement.Application.DTOs;
 
-public class UpdateTaskDto
+public record CreateTaskDto
 {
     [Required]
     [StringLength(200, MinimumLength = 1)]
@@ -13,10 +12,10 @@ public class UpdateTaskDto
     public string? Description { get; set; }
 
     [EnumDataType(typeof(TaskPriority))]
-    public TaskPriority Priority { get; set; }
+    public TaskPriority Priority { get; set; } = TaskPriority.Medium;
 
     public DateOnly? DueDate { get; set; }
 
     [Range(1, int.MaxValue)]
-    public int BoardColumnId { get; set; } // we need to move it's column to update a task 
+    public int BoardColumnId { get; set; }
 }

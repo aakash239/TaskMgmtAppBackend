@@ -1,5 +1,3 @@
-using TaskManagement.Core.Enums;
-
 namespace TaskManagement.Infrastructure.Entities;
 
 public class ProjectTask

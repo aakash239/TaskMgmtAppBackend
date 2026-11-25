@@ -1,8 +1,9 @@
 using System.ComponentModel.DataAnnotations;
+
 namespace TaskManagement.Application.DTOs;
 
 // data that we recieve from frontend to create user
-public class SignUpRequestDto
+public record SignUpRequestDto
 {
     [Required]
     [StringLength(256)]

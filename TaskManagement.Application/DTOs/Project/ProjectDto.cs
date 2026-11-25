@@ -1,7 +1,8 @@
 using TaskManagement.Core.Enums;
+
 namespace TaskManagement.Application.DTOs;
 
-public class ProjectDto
+public record ProjectDto
 {
     public int ProjectId {get; set;}
     public string Name {get; set;} = string.Empty;
@@ -16,6 +17,4 @@ public class ProjectDto
     public DateTime? UpdatedAt {get; set;}
 
     public ProjectRole MyRole {get; set;}
-
-
 }

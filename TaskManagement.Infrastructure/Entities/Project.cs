@@ -8,19 +8,12 @@ public class Project
     public string? Description {get; set;}
     public int TemplateId {get; set;}
     public ProjectStatus Status {get;set;} = ProjectStatus.Active;
-
     public DateOnly? DueDate {get; set;}
-
     public int CreatedByUserId {get; set;}
-
     public DateTime CreatedAt {get; set;} = DateTime.UtcNow;
-
     public DateTime? UpdatedAt {get; set;}
-
     public bool IsDeleted {get;set;}
-
     public DateTime? DeletedAt {get; set;}
-
     public int? DeletedByUserId {get;set;}
 
     // Navigation Properties
