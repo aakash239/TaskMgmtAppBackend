@@ -90,4 +90,9 @@ public class ProjectService(IProjectRepository projectRepository, ICurrentUserSe
         await _projectRepository.UpdateTemplateAsync(projectId, request.TemplateId, _currentUser.UserId, cancellationToken);
         return await GetByIdAsync(projectId, cancellationToken);
     }
+
+    public Task<List<TaskDto>> GetAllTasksAsync(int projectId, CancellationToken cancellationToken)
+    {
+        return _projectRepository.GetAllTasksAsync(projectId, cancellationToken);
+    }
 }

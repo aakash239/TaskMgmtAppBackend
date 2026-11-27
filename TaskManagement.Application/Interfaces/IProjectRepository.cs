@@ -29,4 +29,7 @@ public interface IProjectRepository
     Task<bool> RestoreAsync(int projectId, CancellationToken cancellationToken = default);
      
     Task UpdateTemplateAsync(int projectId, int templateId, int userId, CancellationToken cancellationToken = default);
+
+    Task<List<TaskDto>> GetAllTasksAsync(int projectId, CancellationToken cancellationToken = default);
+
 }
