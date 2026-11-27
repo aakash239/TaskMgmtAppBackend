@@ -6,10 +6,12 @@ using TaskManagement.Core.Exceptions;
 namespace TaskManagement.Application.Services;
 
 // All project business rules live here
-public class ProjectService(IProjectRepository projectRepository, ICurrentUserService currentUser) : IProjectService
+public class ProjectService(IProjectRepository projectRepository, ITaskRepository taskRepository, ICurrentUserService currentUser) : IProjectService
 {
     private readonly IProjectRepository _projectRepository = projectRepository; // data access abstraction
     private readonly ICurrentUserService _currentUser = currentUser; // who is calling
+
+    private readonly ITaskRepository _taskRepository = taskRepository;
 
     public Task<List<ProjectDto>> GetMyProjectsAsync(CancellationToken cancellationToken = default) =>
     _projectRepository.GetMyProjectsAsync(_currentUser.UserId, cancellationToken);
@@ -91,8 +93,11 @@ public class ProjectService(IProjectRepository projectRepository, ICurrentUserSe
         return await GetByIdAsync(projectId, cancellationToken);
     }
 
-    public Task<List<TaskDto>> GetAllTasksAsync(int projectId, CancellationToken cancellationToken)
+    public async Task<List<TaskDto>> GetAllTasksAsync(int projectId, CancellationToken cancellationToken)
     {
-        return _projectRepository.GetAllTasksAsync(projectId, cancellationToken);
+        if (!await _projectRepository.IsAdminAsync(projectId, _currentUser.UserId, cancellationToken))
+            throw new ForbiddenException("Only project admins can view all tasks.");
+
+        return await _taskRepository.GetAllProjectTasksAsync(projectId, cancellationToken);
     }
 }

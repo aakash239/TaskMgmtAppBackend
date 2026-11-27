@@ -173,25 +173,9 @@ private readonly AppDbContext _context = context;
         await _context.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task<List<TaskDto>> GetAllTasksAsync(int projectId, CancellationToken cancellationToken = default)
-    {
-        return await _context.Tasks.AsNoTracking()
-                                   .Where(t => t.Board.ProjectId == projectId)
-                                   .OrderBy(t => t.Title)
-                                   .Select(t => new TaskDto
-                                   {
-                                       TaskId = t.TaskId,
-                                       BoardId = t.BoardId,
-                                       BoardColumnId = t.BoardColumnId,
-                                       Title = t.Title,
-                                       Description = t.Description,
-                                       Priority = t.Priority,
-                                       DueDate = t.DueDate,
-                                       CreatedAt = t.CreatedAt,
-                                       UpdatedAt = t.UpdatedAt
-                                   })
-                                   .ToListAsync(cancellationToken);
-
-        
-    }
+    public Task<bool> IsAdminAsync(int projectId, int userId, CancellationToken cancellationToken)
+    => _context.ProjectMembers.AnyAsync(m => m.ProjectId == projectId
+                                          && m.UserId == userId
+                                          && m.Role == ProjectRole.Admin,
+                                        cancellationToken);
 }
